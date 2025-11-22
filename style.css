@@ -1,0 +1,321 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7e9c4;
+    margin: 0;
+    padding: 0;
+}
+#game-container {
+    max-width: 960px;
+    width: 95%;
+    margin: 24px auto;
+    background: #fffbe6;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+#game-output {
+    min-height: 120px;
+    margin-bottom: 16px;
+    background: #f0e6d2;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 1.1em;
+}
+#game-input {
+    width: 70%;
+    padding: 8px;
+    font-size: 1em;
+}
+#submit-btn {
+    padding: 8px 16px;
+    font-size: 1em;
+    background: #e2b13c;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#submit-btn:hover {
+    background: #c99c2b;
+}
+
+/* 輪盤樣式 */
+#roulette-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+#roulette {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    overflow: visible;
+    background: conic-gradient(
+        #f5c27a 0deg 40deg,
+        #f1a84b 40deg 80deg,
+        #e9e4b7 80deg 120deg,
+        #f5c27a 120deg 160deg,
+        #f1a84b 160deg 200deg,
+        #e9e4b7 200deg 240deg,
+        #f5c27a 240deg 280deg,
+        #f1a84b 280deg 320deg,
+        #e9e4b7 320deg 360deg
+    );
+    transform: rotate(0deg);
+}
+
+/* 無限旋轉動畫 */
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 指標 */
+#roulette::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 18px solid #c94f2e;
+    z-index: 5;
+}
+
+.slice-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-origin: 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+#spin-btn, #stop-btn {
+    padding: 8px 12px;
+    background: #d47a2a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#stop-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width:600px) {
+    #roulette { width: 220px; height: 220px; }
+}
+
+/* Slot machine styles */
+#slot-machine {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.reel {
+    width: 90px;
+    height: 120px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 4px solid #e9d8b7;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+    position: relative;
+}
+.reel .strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+.symbol {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: #333;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    background: linear-gradient(180deg,#fff,#f7f1df);
+}
+
+/* spinning class uses JS to apply continuous translateY animation */
+.reel.spinning { }
+
+/* highlight middle visible symbol */
+.reel::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30px; /* center of 60px symbol */
+    height: 60px;
+    pointer-events: none;
+    border: 2px solid rgba(212,122,42,0.15);
+    border-radius: 6px;
+}
+
+/* controls layout */
+#slot-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+@media (max-width:600px) {
+    .reel { width: 70px; height: 100px; }
+    .symbol { height: 50px; font-size: 14px; }
+}
+
+#main-area {
+    flex: 1 1 0;
+}
+
+#status-panel {
+    background: linear-gradient(180deg,#fff,#fff8eb);
+    border: 1px solid rgba(0,0,0,0.04);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+}
+#status-panel .stat { font-weight:700; }
+
+/* 狀態面板左右並列：玩家與敵人 */
+.status-box {
+    flex: 1 1 0;
+    background: linear-gradient(180deg,#ffffff,#fffaf0);
+    border-radius: 6px;
+    padding: 8px 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.status-box .stat-label {
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+.hp-row { font-weight:700; margin-bottom:6px; }
+.hp-bar {
+    width: 100%;
+    height: 14px;
+    background: #efecec;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.hp-inner {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg,#7bd389,#3fbf5f);
+    transform-origin: left center;
+    transition: width 350ms ease;
+}
+.enemy-hp { background: linear-gradient(90deg,#ff7a7a,#e94242); }
+.stats-row { display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.95em; }
+
+/* 當畫面窄時轉成直列 */
+@media (max-width:800px) {
+    #status-panel { flex-direction: column; }
+}
+#sidebar {
+    width: 220px;
+    background: #fff8ea;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    font-size: 14px;
+}
+#sidebar h2 { margin-top: 0; }
+#sidebar ul { padding-left: 16px; }
+
+#status-summary {
+    background:#fff3d9;
+    padding:8px;
+    border-radius:6px;
+    margin-bottom:10px;
+    font-weight:700;
+}
+
+/* 隱藏側欄上方的敵人說明（因為已在狀態面板顯示） */
+#status-summary { display: none; }
+
+/* 歡迎欄樣式 */
+#welcome-panel {
+    background: linear-gradient(180deg,#fffdf2,#fff4d9);
+    border: 1px solid rgba(0,0,0,0.04);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* move controls */
+#move-controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+#move-buttons button { padding: 8px 12px; margin-right: 6px; background:#4a90e2; color:white; border:none; border-radius:6px; cursor:pointer; }
+#map-info { font-weight:700; }
+
+@media (max-width:800px) {
+    #game-container { flex-direction: column; padding: 8px; }
+    #sidebar { width: 100%; }
+}
+
+/* prevent game output from stretching horizontally and make it scrollable (顯示最新訊息) */
+#game-output {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    /* 固定高度並允許捲動，顯示最新 20 條訊息 */
+    max-height: 320px;
+    height: 320px;
+    overflow-y: auto;
+}
+
+/* 隱藏原本的指令輸入欄位（可復原：移除此規則） */
+#game-input,
+#submit-btn {
+    display: none !important;
+}
+
+/* Combo row styling and animation */
+.combo-row {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #fff3d9;
+    color: #6b4a00;
+    font-weight: 800;
+    transition: box-shadow 250ms ease, transform 250ms ease, background 250ms ease;
+}
+.combo-row.combo-active {
+    background: linear-gradient(90deg, #ffd86b, #ffb86b);
+    color: #5a2b00;
+    animation: comboPulse 1s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(255,180,50,0.6);
+    transform: translateY(-2px);
+}
+@keyframes comboPulse {
+    0% { box-shadow: 0 0 6px rgba(255,180,50,0.35); transform: scale(1); }
+    50% { box-shadow: 0 0 18px rgba(255,180,50,0.9); transform: scale(1.04); }
+    100% { box-shadow: 0 0 6px rgba(255,180,50,0.35); transform: scale(1); }
+}

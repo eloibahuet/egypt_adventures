@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egypt Adventures</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Egypt Adventures</h1>
+           <div id="main-area">
+            <!-- 歡迎欄位（固定顯示） -->
+            <div id="welcome-panel">迷途的旅人，請選擇前進的方向來決定你在沙漠中的命運吧！</div>
+            <!-- 角色與敵人資訊（位於歡迎欄下方） -->
+            <div id="status-panel"></div>
+            <!-- 事件與戰鬥說明（在角色資訊下方） -->
+            <div id="game-output"></div>
+                <div id="move-controls">
+                    <div id="move-buttons">
+                        <button id="move-front">前</button>
+                        <button id="move-left">左</button>
+                        <button id="move-right">右</button>
+                    </div>
+                    <div id="map-info">剩餘步數: <span id="map-steps">30</span></div>
+                </div>
+                 <div id="slot-machine">
+                     <div class="reel" id="reel-0"></div>
+                     <div class="reel" id="reel-1"></div>
+                     <div class="reel" id="reel-2"></div>
+                 </div>
+                 <div id="slot-controls">
+                     <button id="spin-btn">旋轉</button>
+                     <button id="stop-btn" disabled>停止</button>
+                     <button id="auto-spin-btn">自動旋轉</button>
+                     <button id="flee-btn">逃離</button>
+                     <button id="equip-btn">裝備</button>
+                 </div>
+                <div id="equipment-panel" style="display:none; border:1px solid #666; padding:8px; background:#fff; position:fixed; right:20px; top:100px; width:240px; z-index:40;">
+                    <h3>裝備與背包</h3>
+                    <div id="equip-content">空</div>
+                    <div style="margin-top:8px;"><button id="close-equip">關閉</button></div>
+                </div>
+                <div id="blackmarket-panel" style="display:none; border:1px solid #a33; padding:8px; background:#fff8f8; position:fixed; left:20px; top:100px; width:320px; z-index:45;">
+                    <h3>黑市商人</h3>
+                    <div id="blackmarket-desc">黑市中可以以賭博方式購買裝備（普通～史詩），最多可購買兩件。請小心行事！</div>
+                    <div id="blackmarket-items" style="margin-top:8px;"></div>
+                    <div style="margin-top:8px;"><button id="close-blackmarket">關閉</button></div>
+                </div>
+        </div>
+        <input type="text" id="game-input" placeholder="請輸入指令...">
+        <button id="submit-btn">送出</button>
+           <aside id="sidebar">
+               <div id="status-summary"></div>
+               <h2>符號說明</h2>
+               <ul>
+                   <li><strong>⚔️</strong> - 攻擊</li>
+                   <li><strong>⚡️</strong> - 技能</li>
+                   <li><strong>🛡️</strong> - 防禦</li>
+                   <li><strong>💀</strong> - 敵人攻擊</li>
+                   <li><strong>🧪</strong> - 回復</li>
+                   <li><strong>⭐</strong> - 幸運加成</li>
+               </ul>
+           </aside>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
