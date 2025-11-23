@@ -149,6 +149,26 @@ const QUALITY_BONUS = {
 	}
 };
 
+// 金字塔裝備字綴系統（僅金字塔掉落裝備擁有）
+const PYRAMID_AFFIXES = [
+	{ id: 'ra', name: '太陽神拉之', color: '#FFD700', bonus: { atk: 3, crit_rate: 8 } },
+	{ id: 'anubis', name: '死神阿努比斯之', color: '#8B4513', bonus: { def: 3, max_hp_bonus: 30 } },
+	{ id: 'osiris', name: '冥王歐西里斯之', color: '#4B0082', bonus: { max_hp_bonus: 40, stamina_bonus: 20 } },
+	{ id: 'horus', name: '荷魯斯之', color: '#1E90FF', bonus: { atk: 4, combo_rate: 12 } },
+	{ id: 'isis', name: '女神伊西斯之', color: '#FF69B4', bonus: { luck_combat: 2, luck_gold: 2 } },
+	{ id: 'thoth', name: '智慧神托特之', color: '#00CED1', bonus: { skill_power: 20, dodge_rate: 10 } }
+];
+
+// 套裝效果（需要武器+護甲+護符三件相同字綴，且同品質）
+const SET_BONUSES = {
+	'ra': { name: '太陽神的榮耀', effects: { atk: 10, crit_rate: 15, skill_power: 25 } },
+	'anubis': { name: '死神的庇護', effects: { def: 10, max_hp_bonus: 80, dodge_rate: 15 } },
+	'osiris': { name: '冥界的力量', effects: { max_hp_bonus: 100, stamina_bonus: 50, def: 8 } },
+	'horus': { name: '天空之神的祝福', effects: { atk: 12, combo_rate: 20, crit_rate: 12 } },
+	'isis': { name: '魔法女神的恩賜', effects: { luck_combat: 4, luck_gold: 4, max_hp_bonus: 50 } },
+	'thoth': { name: '智慧的啟迪', effects: { skill_power: 40, dodge_rate: 20, stamina_bonus: 30 } }
+};
+
 function genEnemyName(type) {
 	const prefixes = ['古夫', '阿努', '賽特', '拉', '梅特'];
 	const suffixes = ['守衛', '戰士', '祭司', '掠奪者', '守護者'];
@@ -206,6 +226,30 @@ function genEnemyName(type) {
 			this.normalMapSteps = 0; // 儲存進入金字塔前的步數
 		}
 
+		// 檢測套裝效果（需要武器+護甲+護符三件相同字綴且同品質）
+		getActiveSetBonus() {
+			const weapon = this.player.equipment.weapon;
+			const armor = this.player.equipment.armor;
+			const amulet = this.player.equipment.amulet;
+			
+			// 檢查是否都是金字塔裝備
+			if (!weapon || !armor || !amulet) return null;
+			if (!weapon.isPyramid || !armor.isPyramid || !amulet.isPyramid) return null;
+			
+			// 檢查字綴是否相同
+			if (weapon.affix !== armor.affix || weapon.affix !== amulet.affix) return null;
+			
+			// 檢查品質是否相同（不能混搭）
+			if (weapon.rarity !== armor.rarity || weapon.rarity !== amulet.rarity) return null;
+			
+			// 返回套裝效果
+			const setBonus = SET_BONUSES[weapon.affix];
+			if (setBonus) {
+				return { ...setBonus, affix: weapon.affix, affixName: weapon.affixName, rarity: weapon.rarity };
+			}
+			return null;
+		}
+
 		// 經驗曲線：傳回升到下一等級所需的經驗值（簡單指數增長，可擴展至等級99）
 		xpForNext(level) {
 			// level 起始於 1，要升到 level+1 所需
@@ -230,6 +274,37 @@ function genEnemyName(type) {
 			}
 		}
 
+		// 檢測套裝效果（需要武器+護甲+護符三件相同字綴且同品質）
+		getActiveSetBonus() {
+			const weapon = this.player.equipment.weapon;
+			const armor = this.player.equipment.armor;
+			const amulet = this.player.equipment.amulet;
+			
+			// 檢查是否都是金字塔裝備
+			if (!weapon || !armor || !amulet) return null;
+			if (!weapon.isPyramid || !armor.isPyramid || !amulet.isPyramid) return null;
+			
+			// 檢查字綴是否相同
+			if (weapon.affix !== armor.affix || weapon.affix !== amulet.affix) return null;
+			
+			// 檢查品質是否相同（不能混搭）
+			if (weapon.rarity !== armor.rarity || weapon.rarity !== amulet.rarity) return null;
+			
+			// 返回套裝效果
+			const setBonus = SET_BONUSES[weapon.affix];
+			if (setBonus) {
+				return { ...setBonus, affix: weapon.affix, affixName: weapon.affixName, rarity: weapon.rarity };
+			}
+			return null;
+		}
+
+		// 獲取套裝效果屬性加成值
+		getSetBonusValue(attrName) {
+			const setBonus = this.getActiveSetBonus();
+			if (!setBonus || !setBonus.effects) return 0;
+			return setBonus.effects[attrName] || 0;
+		}
+
 		// 顯示/更新裝備面板（簡易介面），可選 filterSlot: 'weapon'|'armor'|'amulet' 或 null
 		showEquipmentPanel(filterSlot = null) {
 			// Helper: 格式化物品屬性顯示
@@ -252,7 +327,14 @@ function genEnemyName(type) {
 				let color = '#333'; // 普通 common
 				if (it.rarity === 'rare') color = '#2ecc71'; // 精良 綠色
 				else if (it.rarity === 'epic') color = '#9b59b6'; // 史詩 紫色
-				return `<span style="color: ${color}; font-weight: bold;">${it.name}</span>${attr}`;
+				
+				// 金字塔裝備顯示字綴
+				let displayName = it.name;
+				if (it.isPyramid && it.affixName) {
+					displayName = `<span style="color: ${it.affixColor};">${it.affixName}</span>${it.name}`;
+				}
+				
+				return `<span style="color: ${color}; font-weight: bold;">${displayName}</span>${attr}`;
 			};
 			const panel = document.getElementById('equipment-panel');
 			const content = document.getElementById('equip-content');
@@ -265,6 +347,24 @@ function genEnemyName(type) {
 			html += `<div>武器: ${weapText} <button class="unequip-inline" data-slot="weapon">卸下</button> <button class="open-equip-inline" data-slot="weapon">裝備</button></div>`;
 			html += `<div>防具: ${armText} <button class="unequip-inline" data-slot="armor">卸下</button> <button class="open-equip-inline" data-slot="armor">裝備</button></div>`;
 			html += `<div>護符: ${amuText} <button class="unequip-inline" data-slot="amulet">卸下</button> <button class="open-equip-inline" data-slot="amulet">裝備</button></div>`;
+			
+			// 顯示套裝效果
+			const setBonus = this.getActiveSetBonus();
+			if (setBonus) {
+				const setParts = [];
+				if (setBonus.effects.atk) setParts.push(`攻+${setBonus.effects.atk}`);
+				if (setBonus.effects.def) setParts.push(`防+${setBonus.effects.def}`);
+				if (setBonus.effects.max_hp_bonus) setParts.push(`HP+${setBonus.effects.max_hp_bonus}`);
+				if (setBonus.effects.stamina_bonus) setParts.push(`體力+${setBonus.effects.stamina_bonus}`);
+				if (setBonus.effects.luck_combat) setParts.push(`戰運+${setBonus.effects.luck_combat}`);
+				if (setBonus.effects.luck_gold) setParts.push(`金運+${setBonus.effects.luck_gold}`);
+				if (setBonus.effects.crit_rate) setParts.push(`暴擊+${setBonus.effects.crit_rate}%`);
+				if (setBonus.effects.combo_rate) setParts.push(`連擊+${setBonus.effects.combo_rate}%`);
+				if (setBonus.effects.skill_power) setParts.push(`技能+${setBonus.effects.skill_power}%`);
+				if (setBonus.effects.dodge_rate) setParts.push(`閃避+${setBonus.effects.dodge_rate}%`);
+				const rarityText = setBonus.rarity === 'rare' ? '精良' : setBonus.rarity === 'epic' ? '史詩' : '';
+				html += `<hr/><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 6px; color: white; margin: 8px 0;"><strong>⚡ 套裝效果：${setBonus.name} (${rarityText})</strong><br/>${setParts.join(' ')}</div>`;
+			}
 			html += `<hr/><div><strong>背包</strong></div>`;
 			const inv = this.player.inventory;
 			let shown = 0;
@@ -394,6 +494,14 @@ function genEnemyName(type) {
 				const xpNeeded = this.xpForNext(this.player.level);
 				const xpPct = this.player.level >= 99 ? 100 : Math.max(0, Math.min(100, Math.floor((this.player.xp / xpNeeded) * 100)));
 				
+				// 檢查套裝效果
+				const setBonus = this.getActiveSetBonus();
+				let setBonusHtml = '';
+				if (setBonus) {
+					const rarityText = setBonus.rarity === 'rare' ? '精良' : setBonus.rarity === 'epic' ? '史詩' : '';
+					setBonusHtml = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; margin: 4px 0;">⚡ ${setBonus.name} (${rarityText})</div>`;
+				}
+				
 				playerStatusEl.innerHTML = `
 					<div class="stat-label">玩家 Lv.${this.player.level}</div>
 					<div class="hp-row">HP: <span class="hp-text">${this.player.hp}/${this.player.max_hp}</span></div>
@@ -408,6 +516,7 @@ function genEnemyName(type) {
                     	<div>幸運(戰): ${this.player.luck_combat}</div>
                     	<div>幸運(金): ${this.player.luck_gold}</div>
                 	</div>
+					${setBonusHtml}
 					<div class="combo-row ${ (this.inBattle && (this.consecutivePrimaryCount||0) > 1) ? 'combo-active' : '' }">Combo: ${comboText}</div>
 					<div class="equip-row">
 						<div>武器: ${this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : '無'} <button class="open-equip-btn" data-slot="weapon">裝備</button> <button class="unequip-btn" data-slot="weapon">卸下</button></div>
@@ -551,34 +660,36 @@ function genEnemyName(type) {
 			showMessage(`遭遇 ${type}，進入插槽戰鬥！`);
 			// 設定戰鬥狀態與敵人屬性
 			this.inBattle = true;
-			// 產生敵人名稱與強度
+			// 產生敵人名稱
 			this.enemy.name = genEnemyName(type);
-			if (type === 'elite') this.enemy.strength = 1.6;
-			else if (type === 'mini_boss') this.enemy.strength = 2.4;
-			else this.enemy.strength = 1.0;
 			showMessage(`遭遇敵人：${this.enemy.name}`);
 			// 戰鬥開始時停用移動按鈕
 			const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
 			const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
 			const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
 			// 根據類型調整敵人血量與普攻力
-			let hpMultiplier = this.inPyramid ? 2.0 : 1.0;
-			let atkMultiplier = this.inPyramid ? 1.8 : 1.0;
+			// 金字塔內敵人隨地圖難度增強：HP x(3+難度*0.5), ATK x(2.5+難度*0.3), 強度x(1.5+難度*0.2)
+			let hpMultiplier = this.inPyramid ? (3.0 + this.difficulty * 0.5) : 1.0;
+			let atkMultiplier = this.inPyramid ? (2.5 + this.difficulty * 0.3) : 1.0;
+			let strengthBonus = this.inPyramid ? (1.5 + this.difficulty * 0.2) : 1.0;
 			
 			if (type === 'elite') {
 				this.enemy.max_hp = Math.floor((150 + 20 * this.difficulty) * hpMultiplier);
 				this.enemy.baseAttack = Math.floor((15 + 5 * this.difficulty) * atkMultiplier);
+				this.enemy.strength = 1.6 * strengthBonus;
 			} else if (type === 'mini_boss') {
 				this.enemy.max_hp = Math.floor((250 + 40 * this.difficulty) * hpMultiplier);
 				this.enemy.baseAttack = Math.floor((25 + 8 * this.difficulty) * atkMultiplier);
+				this.enemy.strength = 2.4 * strengthBonus;
 			} else {
 				this.enemy.max_hp = Math.floor((100 + 10 * this.difficulty) * hpMultiplier);
 				this.enemy.baseAttack = Math.floor((10 + 2 * this.difficulty) * atkMultiplier);
+				this.enemy.strength = 1.0 * strengthBonus;
 			}
 			
 			if (this.inPyramid) {
-				this.enemy.name += ' (金字塔)';
-				showMessage('⚠️ 金字塔敵人實力強大！');
+				this.enemy.name += ` (金字塔-地圖${this.difficulty})`;
+				showMessage(`⚠️ 金字塔敵人實力強大！血量x${hpMultiplier.toFixed(1)}、攻擊x${atkMultiplier.toFixed(1)}、強度x${strengthBonus.toFixed(1)}`);
 			}
 			this.enemy.hp = this.enemy.max_hp;
 		this.enemy.turnsToAttack = 3;
@@ -667,7 +778,7 @@ function genEnemyName(type) {
 				for (const rw of rarityWeights){ acc+=rw.w; if (r<acc) return rw.r; }
 				return 'common';
 			}
-			function cloneItem(base, rarity){
+			function cloneItem(base, rarity, isPyramid = false){
 				const it = Object.assign({}, base);
 				it.rarity = rarity;
 				// 調整屬性幅度：rare +~1.5, epic +~2.2
@@ -684,6 +795,23 @@ function genEnemyName(type) {
 						const bonus = bonusPool[Math.floor(Math.random() * bonusPool.length)];
 						Object.assign(it, bonus);
 					}
+				}
+				
+				// 金字塔裝備添加字綴
+				if (isPyramid && rarity !== 'common') {
+					const affix = PYRAMID_AFFIXES[Math.floor(Math.random() * PYRAMID_AFFIXES.length)];
+					it.affix = affix.id;
+					it.affixName = affix.name;
+					it.affixColor = affix.color;
+					// 添加字綴屬性加成
+					for (const key in affix.bonus) {
+						if (it[key]) {
+							it[key] += affix.bonus[key];
+						} else {
+							it[key] = affix.bonus[key];
+						}
+					}
+					it.isPyramid = true;
 				}
 				return it;
 			}
@@ -1460,15 +1588,13 @@ function genEnemyName(type) {
 			} else { this.player.hp = Math.max(1, this.player.hp - 15); showMessage('受到詛咒：HP -15'); }
 		}
 
-		pyramid() {
-			showMessage('🔺 你發現了一座古老的金字塔！');
-			showMessage('這裡充滿危險，但也蘊藏著巨大的寶藏...');
-			showMessage('金字塔副本：8步探險，敵人強度高、獎勵豐厚（3倍經驗/金幣），保證掉落優良以上裝備！');
-			// 創建選擇面板
-			this.showPyramidChoice();
-		}
-
-		showPyramidChoice() {
+	pyramid() {
+		showMessage('🔺 你發現了一座古老的金字塔！');
+		showMessage('這裡充滿危險，但也蘊藏著巨大的寶藏...');
+		showMessage('金字塔副本：8步探險，敵人強度極高（隨地圖提升），獎勵豐厚（15倍經驗/金幣），保證掉落優良以上裝備！');
+		// 創建選擇面板
+		this.showPyramidChoice();
+	}		showPyramidChoice() {
 			// 禁用移動按鈕
 			const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
 			const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
@@ -1498,11 +1624,11 @@ function genEnemyName(type) {
 					是否進入金字塔探險？
 				</p>
 				<div style="background: #fff; padding: 12px; border-radius: 6px; margin: 12px 0; border: 1px solid #ddd;">
-					<strong>副本特性：</strong><br>
+					<strong>副本特性（地圖${this.difficulty}）：</strong><br>
 					✦ 8步探險旅程<br>
-					✦ 敵人強度極高<br>
-					✦ 經驗值 x3 倍<br>
-					✦ 金幣 x3 倍<br>
+					✦ 敵人強度極高（HP x${(3 + this.difficulty * 0.5).toFixed(1)}, ATK x${(2.5 + this.difficulty * 0.3).toFixed(1)}）<br>
+					✦ 經驗值 x15 倍<br>
+					✦ 金幣 x15 倍<br>
 					✦ 保證掉落優良以上裝備<br>
 				</div>
 				<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
@@ -1771,27 +1897,23 @@ function genEnemyName(type) {
 						const reward = baseReward * pyramidMultiplier * enemyTypeMultiplier;
 						this.player.gold += reward;
 						
-						let rewardMsg = `獲得金幣 ${reward}`;
-						if (this.inPyramid) {
-							rewardMsg = `🔺 金字塔獎勵 x15！獲得金幣 ${reward} (基礎 ${baseReward} x15`;
-							if (enemyTypeMultiplier > 1) {
-								rewardMsg += ` x${enemyTypeMultiplier}`;
-							}
-							rewardMsg += ')';
-						} else if (enemyTypeMultiplier > 1) {
-							rewardMsg += ` (基礎 ${baseReward} x${enemyTypeMultiplier})`;
+					let rewardMsg = `獲得金幣 ${reward}`;
+					if (this.inPyramid) {
+						rewardMsg = `🔺 金字塔獎勵 x${pyramidMultiplier}！獲得金幣 ${reward} (基礎 ${baseReward} x${pyramidMultiplier}`;
+						if (enemyTypeMultiplier > 1) {
+							rewardMsg += ` x${enemyTypeMultiplier}`;
 						}
-						showMessage(rewardMsg);
-						
-						// 經驗值以難度與敵人強度計算
-						const baseXP = Math.floor(15 * this.difficulty * (this.enemy.strength || 1));
-						const xpGain = baseXP * pyramidMultiplier * enemyTypeMultiplier;
-						if (this.inPyramid) {
-							showMessage(`🔺 金字塔經驗值 x15！`);
-						}
-						this.addXP(xpGain);
-						
-						// 掉落機制
+						rewardMsg += ')';
+					} else if (enemyTypeMultiplier > 1) {
+						rewardMsg += ` (基礎 ${baseReward} x${enemyTypeMultiplier})`;
+					}
+					showMessage(rewardMsg);						// 經驗值以難度與敵人強度計算
+					const baseXP = Math.floor(15 * this.difficulty * (this.enemy.strength || 1));
+					const xpGain = baseXP * pyramidMultiplier * enemyTypeMultiplier;
+					if (this.inPyramid) {
+						showMessage(`🔺 金字塔經驗值 x${pyramidMultiplier}！`);
+					}
+					this.addXP(xpGain);						// 掉落機制
 						let dropped = null;
 						if (this.inPyramid) {
 							// 金字塔保證掉落1-2件稀有/史詩裝備
@@ -1804,7 +1926,7 @@ function genEnemyName(type) {
 								const candidateItems = ITEMS.filter(it => it.slot); // 只要有slot的
 								if (candidateItems.length > 0) {
 									const baseItem = candidateItems[Math.floor(Math.random() * candidateItems.length)];
-									dropped = cloneItem(baseItem, targetRarity);
+									dropped = cloneItem(baseItem, targetRarity, true); // isPyramid=true
 									this.player.inventory.push(dropped);
 									showMessage(`  ✨ 獲得 ${this.formatItem(dropped)}`);
 								}
@@ -1905,24 +2027,45 @@ function genEnemyName(type) {
 					}
 				}
 
-			// 檢查敵人或玩家死亡
-			// 已在戰鬥流程中處理敵人死亡與獎勵
-			// 若玩家 HP 歸零，嘗試使用背包藥水復活；若無藥水則死亡
-			if (this.player.hp <= 0) {
-				if (this.player.potions > 0) {
-					this.player.potions -= 1;
-					this.player.hp = this.player.max_hp;
-					this.player.stamina = this.player.max_stamina;
-					showMessage(`HP 歸零，消耗一瓶藥水自動復活並回滿 HP/體力。剩餘藥水：${this.player.potions}`);
-				} else {
-					showMessage('你倒下了，遊戲結束。沒有藥水可用。請重新整理頁面以重玩。');
-					// 禁用按鈕
-					spinBtn.disabled = true;
-					stopBtn.disabled = true;
+		// 檢查敵人或玩家死亡
+		// 已在戰鬥流程中處理敵人死亡與獎勵
+		// 若玩家 HP 歸零，嘗試使用背包藥水復活；若無藥水則死亡
+		if (this.player.hp <= 0) {
+			if (this.player.potions > 0) {
+				this.player.potions -= 1;
+				this.player.hp = this.player.max_hp;
+				this.player.stamina = this.player.max_stamina;
+				showMessage(`HP 歸零，消耗一瓶藥水自動復活並回滿 HP/體力。剩餘藥水：${this.player.potions}`);
+			} else {
+				showMessage('你倒下了，遊戲結束。沒有藥水可用。請重新整理頁面以重玩。');
+				// 停止自動旋轉
+				try { stopAutoSpinLoop(); } catch(e) {}
+				// 設置戰鬥狀態為 false
+				this.inBattle = false;
+				// 禁用按鈕
+				spinBtn.disabled = true;
+				stopBtn.disabled = true;
+				// 禁用並重置自動旋轉按鈕
+				const autoBtn = document.getElementById('auto-spin-btn'); 
+				if (autoBtn) {
+					autoBtn.disabled = true;
+					autoBtn.textContent = '自動旋轉';
+					autoBtn.style.background = '';
 				}
 			}
-
-			this.updateStatus();
+		}			this.updateStatus();
+			
+			// 在updateStatus後再次檢查戰鬥狀態，確保自動旋轉正確停止
+			if (!this.inBattle && typeof stopAutoSpinLoop === 'function') {
+				try { 
+					stopAutoSpinLoop(); 
+					// 強制禁用旋轉按鈕
+					if (typeof spinBtn !== 'undefined') spinBtn.disabled = true;
+					if (typeof stopBtn !== 'undefined') stopBtn.disabled = true;
+				} catch(e) {
+					console.error('強制停止自動旋轉失敗:', e);
+				}
+			}
 		}
 	}
 
@@ -2186,8 +2329,16 @@ function startAutoSpinLoop() {
 			} catch (e) {
 				console.error(e);
 			}
-			// 啟用 spin
-			spinBtn.disabled = false;
+			
+			// 檢查戰鬥是否已結束，如果已結束則停止自動旋轉
+			if (!game.inBattle) {
+				try { stopAutoSpinLoop(); } catch(e) {}
+			}
+			
+			// 啟用 spin（如果還在戰鬥中）
+			if (game.inBattle) {
+				spinBtn.disabled = false;
+			}
 			stopBtn.disabled = true;
 		});
 	}
@@ -2248,21 +2399,27 @@ function startAutoSpinLoop() {
 		}
 		bindStatusEquipButtons();
 
-		// 自動旋轉與逃跑按鈕綁定
-		const autoBtn = document.getElementById('auto-spin-btn');
-		if (autoBtn) autoBtn.addEventListener('click', ()=>{
-			if (!game.inBattle) {
-				showMessage('目前不在戰鬥中，無法使用自動旋轉。');
-				return;
-			}
-			autoSpin = !autoSpin;
-			autoBtn.textContent = autoSpin ? '停止自動' : '自動旋轉';
-			if (autoSpin) startAutoSpinLoop(); else stopAutoSpinLoop();
-		});
-		const fleeBtn = document.getElementById('flee-btn');
-		if (fleeBtn) fleeBtn.addEventListener('click', ()=>{ game.attemptFlee(); });
+	// 自動旋轉與逃跑按鈕綁定
+	const autoBtn = document.getElementById('auto-spin-btn');
+	if (autoBtn) autoBtn.addEventListener('click', ()=>{
+		if (!game.inBattle) {
+			showMessage('目前不在戰鬥中，無法使用自動旋轉。');
+			return;
+		}
+		autoSpin = !autoSpin;
+		autoBtn.textContent = autoSpin ? '停止自動' : '自動旋轉';
+		if (autoSpin) startAutoSpinLoop(); else stopAutoSpinLoop();
+	});
+	const fleeBtn = document.getElementById('flee-btn');
+	if (fleeBtn) fleeBtn.addEventListener('click', ()=>{ game.attemptFlee(); });
 
-	// 儲存/讀取功能
+	// 定期檢查戰鬥狀態，確保自動旋轉在戰鬥結束時停止
+	setInterval(() => {
+		if (!game.inBattle && autoSpin) {
+			console.log('檢測到戰鬥已結束但自動旋轉未停止，強制停止');
+			stopAutoSpinLoop();
+		}
+	}, 500); // 每500ms檢查一次	// 儲存/讀取功能
 	const saveBtn = document.getElementById('save-btn');
 	const loadBtn = document.getElementById('load-btn');
 
