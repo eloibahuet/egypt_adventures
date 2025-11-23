@@ -360,32 +360,43 @@ function genEnemyName(type) {
 			const content = document.getElementById('equip-content');
 			if (!panel || !content) return;
 			// 列出目前裝備與背包
-			let html = `<div><strong>已裝備</strong></div>`;
-			const weapText = this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : '無';
-			const armText = this.player.equipment.armor ? this.formatItem(this.player.equipment.armor) : '無';
-			const amuText = this.player.equipment.amulet ? this.formatItem(this.player.equipment.amulet) : '無';
-			html += `<div>武器: ${weapText} <button class="unequip-inline" data-slot="weapon">卸下</button> <button class="open-equip-inline" data-slot="weapon">裝備</button></div>`;
-			html += `<div>防具: ${armText} <button class="unequip-inline" data-slot="armor">卸下</button> <button class="open-equip-inline" data-slot="armor">裝備</button></div>`;
-			html += `<div>護符: ${amuText} <button class="unequip-inline" data-slot="amulet">卸下</button> <button class="open-equip-inline" data-slot="amulet">裝備</button></div>`;
+			let html = `<div><strong>${t('equipped')}</strong></div>`;
+			const noneText = t('none');
+			const weapText = this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : noneText;
+			const armText = this.player.equipment.armor ? this.formatItem(this.player.equipment.armor) : noneText;
+			const amuText = this.player.equipment.amulet ? this.formatItem(this.player.equipment.amulet) : noneText;
+			html += `<div>${t('weapon')}: ${weapText} <button class="unequip-inline" data-slot="weapon">${t('unequip')}</button> <button class="open-equip-inline" data-slot="weapon">${t('equip')}</button></div>`;
+			html += `<div>${t('armor')}: ${armText} <button class="unequip-inline" data-slot="armor">${t('unequip')}</button> <button class="open-equip-inline" data-slot="armor">${t('equip')}</button></div>`;
+			html += `<div>${t('amulet')}: ${amuText} <button class="unequip-inline" data-slot="amulet">${t('unequip')}</button> <button class="open-equip-inline" data-slot="amulet">${t('equip')}</button></div>`;
 			
 			// 顯示套裝效果
 			const setBonus = this.getActiveSetBonus();
 			if (setBonus) {
 				const setParts = [];
-				if (setBonus.effects.atk) setParts.push(`攻+${setBonus.effects.atk}`);
-				if (setBonus.effects.def) setParts.push(`防+${setBonus.effects.def}`);
-				if (setBonus.effects.max_hp_bonus) setParts.push(`HP+${setBonus.effects.max_hp_bonus}`);
-				if (setBonus.effects.stamina_bonus) setParts.push(`體力+${setBonus.effects.stamina_bonus}`);
-				if (setBonus.effects.luck_combat) setParts.push(`戰運+${setBonus.effects.luck_combat}`);
-				if (setBonus.effects.luck_gold) setParts.push(`金運+${setBonus.effects.luck_gold}`);
-				if (setBonus.effects.crit_rate) setParts.push(`暴擊+${setBonus.effects.crit_rate}%`);
-				if (setBonus.effects.combo_rate) setParts.push(`連擊+${setBonus.effects.combo_rate}%`);
-				if (setBonus.effects.skill_power) setParts.push(`技能+${setBonus.effects.skill_power}%`);
-				if (setBonus.effects.dodge_rate) setParts.push(`閃避+${setBonus.effects.dodge_rate}%`);
-				const rarityText = setBonus.rarity === 'rare' ? '精良' : setBonus.rarity === 'epic' ? '史詩' : '';
-				html += `<hr/><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 6px; color: white; margin: 8px 0;"><strong>⚡ 套裝效果：${setBonus.name} (${rarityText})</strong><br/>${setParts.join(' ')}</div>`;
+				const atkLabel = currentLanguage === 'zh-TW' ? '攻' : currentLanguage === 'fr' ? 'ATT' : 'ATK';
+				const defLabel = currentLanguage === 'zh-TW' ? '防' : currentLanguage === 'fr' ? 'DÉF' : 'DEF';
+				const staminaLabel = currentLanguage === 'zh-TW' ? '體力' : currentLanguage === 'fr' ? 'End' : 'Stam';
+				const combatLuckLabel = currentLanguage === 'zh-TW' ? '戰運' : currentLanguage === 'fr' ? 'Chance C' : 'Luck C';
+				const goldLuckLabel = currentLanguage === 'zh-TW' ? '金運' : currentLanguage === 'fr' ? 'Chance O' : 'Luck G';
+				const critLabel = currentLanguage === 'zh-TW' ? '暴擊' : currentLanguage === 'fr' ? 'Crit' : 'Crit';
+				const comboLabel = currentLanguage === 'zh-TW' ? '連擊' : currentLanguage === 'fr' ? 'Combo' : 'Combo';
+				const skillLabel = currentLanguage === 'zh-TW' ? '技能' : currentLanguage === 'fr' ? 'Comp' : 'Skill';
+				const dodgeLabel = currentLanguage === 'zh-TW' ? '閃避' : currentLanguage === 'fr' ? 'Évit' : 'Dodge';
+				
+				if (setBonus.effects.atk) setParts.push(`${atkLabel}+${setBonus.effects.atk}`);
+				if (setBonus.effects.def) setParts.push(`${defLabel}+${setBonus.effects.def}`);
+				if (setBonus.effects.max_hp_bonus) setParts.push(`${t('hp')}+${setBonus.effects.max_hp_bonus}`);
+				if (setBonus.effects.stamina_bonus) setParts.push(`${staminaLabel}+${setBonus.effects.stamina_bonus}`);
+				if (setBonus.effects.luck_combat) setParts.push(`${combatLuckLabel}+${setBonus.effects.luck_combat}`);
+				if (setBonus.effects.luck_gold) setParts.push(`${goldLuckLabel}+${setBonus.effects.luck_gold}`);
+				if (setBonus.effects.crit_rate) setParts.push(`${critLabel}+${setBonus.effects.crit_rate}%`);
+				if (setBonus.effects.combo_rate) setParts.push(`${comboLabel}+${setBonus.effects.combo_rate}%`);
+				if (setBonus.effects.skill_power) setParts.push(`${skillLabel}+${setBonus.effects.skill_power}%`);
+				if (setBonus.effects.dodge_rate) setParts.push(`${dodgeLabel}+${setBonus.effects.dodge_rate}%`);
+				const rarityText = setBonus.rarity === 'rare' ? (currentLanguage === 'zh-TW' ? '精良' : currentLanguage === 'fr' ? 'Rare' : 'Rare') : setBonus.rarity === 'epic' ? (currentLanguage === 'zh-TW' ? '史詩' : currentLanguage === 'fr' ? 'Épique' : 'Epic') : '';
+				html += `<hr/><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 6px; color: white; margin: 8px 0;"><strong>⚡ ${t('setBonus')}: ${setBonus.name} (${rarityText})</strong><br/>${setParts.join(' ')}</div>`;
 			}
-			html += `<hr/><div><strong>背包</strong></div>`;
+			html += `<hr/><div><strong>${t('inventory')}</strong></div>`;
 			const inv = this.player.inventory;
 			let shown = 0;
 			for (let i=0;i<inv.length;i++){
@@ -393,9 +404,9 @@ function genEnemyName(type) {
 				if (filterSlot && it.slot !== filterSlot) continue;
 				shown++;
 				const disp = this.formatItem(it) || `${it.name}`;
-				html += `<div>${i+1}. ${disp} (${it.rarity}) <button data-idx="${i}" class="equip-now">裝備</button></div>`;
+				html += `<div>${i+1}. ${disp} (${it.rarity}) <button data-idx="${i}" class="equip-now">${t('equip')}</button></div>`;
 			}
-			if (shown === 0) html += '<div>（無對應物品）</div>';
+			if (shown === 0) html += `<div>${t('noMatchingItems')}</div>`;
 			content.innerHTML = html;
 			panel.style.display = 'block';
 			// 連結裝備按鈕
@@ -443,7 +454,7 @@ function genEnemyName(type) {
 				}
 				// 將舊裝備放回背包
 				this.player.inventory.push(oldEquipment);
-				showMessage(`卸下 ${oldEquipment.name}，已放入背包。`);
+				showMessage(`${t('unequipped')} ${oldEquipment.name}, ${t('addedToInventory')}.`);
 			}
 			
 			// 裝備新物品
@@ -476,7 +487,7 @@ function genEnemyName(type) {
 		const it = this.player.equipment[slot];
 		this.player.inventory.push(it);
 		this.player.equipment[slot] = null;
-		showMessage(`卸下 ${it.name}，已放入背包。`);
+		showMessage(`${t('unequipped')} ${it.name}, ${t('addedToInventory')}.`);
 		// 移除裝備屬性加成
 		if (it.luck_gold) {
 			this.player.luck_gold = Math.max(0, this.player.luck_gold - (it.luck_gold||0));
@@ -1766,7 +1777,7 @@ function genEnemyName(type) {
 			if (!invDiv) return;
 			
 			if (this.player.inventory.length === 0) {
-				invDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">背包是空的</div>';
+				invDiv.innerHTML = `<div style="text-align: center; color: #999; padding: 20px;">${t('inventoryEmpty')}</div>`;
 				return;
 			}
 			

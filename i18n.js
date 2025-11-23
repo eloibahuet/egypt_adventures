@@ -172,6 +172,21 @@ const TRANSLATIONS = {
 		noSpecialAttributes: '無特殊屬性',
 		leaveBlackMarket: '離開黑市。',
 		
+		// Equipment panel
+		equipped: '已裝備',
+		inventory: '背包',
+		weapon: '武器',
+		armor: '防具',
+		amulet: '護符',
+		none: '無',
+		unequip: '卸下',
+		equip: '裝備',
+		setBonus: '套裝效果',
+		noMatchingItems: '（無對應物品）',
+		inventoryEmpty: '背包是空的',
+		unequipped: '卸下',
+		addedToInventory: '已放入背包',
+		
 		// Language selector
 		language: '語言',
 		languageChinese: '繁體中文',
@@ -351,6 +366,21 @@ const TRANSLATIONS = {
 		noSpecialAttributes: 'No special attributes',
 		leaveBlackMarket: 'Left black market.',
 		
+		// Equipment panel
+		equipped: 'Equipped',
+		inventory: 'Inventory',
+		weapon: 'Weapon',
+		armor: 'Armor',
+		amulet: 'Amulet',
+		none: 'None',
+		unequip: 'Unequip',
+		equip: 'Equip',
+		setBonus: 'Set Bonus',
+		noMatchingItems: '(No matching items)',
+		inventoryEmpty: 'Inventory is empty',
+		unequipped: 'Unequipped',
+		addedToInventory: 'added to inventory',
+		
 		// Language selector
 		language: 'Language',
 		languageChinese: '繁體中文',
@@ -513,15 +543,30 @@ const TRANSLATIONS = {
 		hpStaminaRecovered: '(PV/Endurance complètement récupérés)',
 		shrineBlessing: '✨ La bénédiction du sanctuaire descend ! Endurance Max',
 		caravanBuyFood: '🍖 Vous avez acheté de la nourriture et du repos à la caravane (coût 60 or), PV et endurance complètement récupérés !',
-		caravanGift: '🍞 La caravane a partagé nourriture et eau, PV',
-		quicksandStruggle: '😰 Vous avez lutté dans les sables mouvants, consommant beaucoup d\'endurance et de santé.',
-		consumeStamina: 'Endurance consommée',
+		leaveBlackMarket: 'Quitté le marché noir.',
 		
-		// Black market
-		price: 'Prix',
-		buy: 'Acheter',
-		purchased: 'Acheté',
-		blackMarketLimit: 'Limite d\'achat du marché noir atteinte (2 objets).',
+		// Equipment panel
+		equipped: 'Équipé',
+		inventory: 'Inventaire',
+		weapon: 'Arme',
+		armor: 'Armure',
+		amulet: 'Amulette',
+		none: 'Aucun',
+		unequip: 'Enlever',
+		equip: 'Équiper',
+		setBonus: 'Bonus d\'Ensemble',
+		noMatchingItems: '(Aucun objet correspondant)',
+		inventoryEmpty: 'L\'inventaire est vide',
+		unequipped: 'Enlevé',
+		addedToInventory: 'ajouté à l\'inventaire',
+		
+		// Language selector
+		language: 'Langue',
+		languageChinese: '繁體中文',
+		languageEnglish: 'English',
+		languageFrench: 'Français'
+	}
+};blackMarketLimit: 'Limite d\'achat du marché noir atteinte (2 objets).',
 		blackMarketEnd: 'Commerce du marché noir terminé.',
 		notEnoughGold: 'Pas assez d\'or pour acheter cet objet.',
 		blackMarketBought: 'Acheté au marché noir',
