@@ -979,21 +979,23 @@ function genEnemyName(type) {
 			let atkMultiplier = this.inPyramid ? (2.5 + this.difficulty * 0.3) : 1.0;
 			let strengthBonus = this.inPyramid ? (1.5 + this.difficulty * 0.2) : 1.0;
 			
-			if (type === 'elite') {
-				this.enemy.max_hp = Math.floor((150 + 20 * this.difficulty) * hpMultiplier);
-				this.enemy.baseAttack = Math.floor((15 + 5 * this.difficulty) * atkMultiplier);
-				this.enemy.strength = 1.6 * strengthBonus;
-			} else if (type === 'mini_boss') {
-				this.enemy.max_hp = Math.floor((250 + 40 * this.difficulty) * hpMultiplier);
-				this.enemy.baseAttack = Math.floor((25 + 8 * this.difficulty) * atkMultiplier);
-				this.enemy.strength = 2.4 * strengthBonus;
-			} else {
-				this.enemy.max_hp = Math.floor((100 + 10 * this.difficulty) * hpMultiplier);
-				this.enemy.baseAttack = Math.floor((10 + 2 * this.difficulty) * atkMultiplier);
-				this.enemy.strength = 1.0 * strengthBonus;
-			}
-			
-			if (this.inPyramid) {
+		if (type === 'elite') {
+			this.enemy.max_hp = Math.floor((150 + 20 * this.difficulty) * hpMultiplier);
+			this.enemy.baseAttack = Math.floor((15 + 5 * this.difficulty) * atkMultiplier);
+			this.enemy.strength = 1.6 * strengthBonus;
+		} else if (type === 'mini_boss') {
+			// 金字塔小頭目難度降低20%
+			const miniBossHpMult = this.inPyramid ? hpMultiplier * 0.8 : hpMultiplier;
+			const miniBossAtkMult = this.inPyramid ? atkMultiplier * 0.8 : atkMultiplier;
+			const miniBossStrMult = this.inPyramid ? strengthBonus * 0.8 : strengthBonus;
+			this.enemy.max_hp = Math.floor((250 + 40 * this.difficulty) * miniBossHpMult);
+			this.enemy.baseAttack = Math.floor((25 + 8 * this.difficulty) * miniBossAtkMult);
+			this.enemy.strength = 2.4 * miniBossStrMult;
+		} else {
+			this.enemy.max_hp = Math.floor((100 + 10 * this.difficulty) * hpMultiplier);
+			this.enemy.baseAttack = Math.floor((10 + 2 * this.difficulty) * atkMultiplier);
+			this.enemy.strength = 1.0 * strengthBonus;
+		}			if (this.inPyramid) {
 				this.enemy.name += ` (金字塔-地圖${this.difficulty})`;
 				showMessage(`${t('pyramidEnemyStrong')}${hpMultiplier.toFixed(1)}、${t('attackX')}${atkMultiplier.toFixed(1)}、${t('strengthX')}${strengthBonus.toFixed(1)}`);
 			}
