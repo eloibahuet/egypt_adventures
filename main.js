@@ -221,12 +221,12 @@ function genEnemyName(type) {
 				const need = this.xpForNext(this.player.level);
 				this.player.xp -= need;
 				this.player.level += 1;
-				// 等級帶來的獎勵：提升最大生命與體力
+				// 等級帶來的獎勵：提升最大生命與體力，並完全恢復
 				this.player.max_hp += 10;
 				this.player.max_stamina += 5;
-				this.player.hp = Math.min(this.player.max_hp, this.player.hp + 10);
-				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 5);
-				showMessage(`升級！你現在等級 ${this.player.level}（HP/體力上升）`);
+				this.player.hp = this.player.max_hp; // 完全恢復血量
+				this.player.stamina = this.player.max_stamina; // 完全恢復體力
+				showMessage(`升級！你現在等級 ${this.player.level} (HP/體力完全恢復)`);
 			}
 		}
 
