@@ -565,11 +565,24 @@ function genEnemyName(type) {
 				const attackCountdown = currentLanguage === 'zh-TW' ? '普攻倒數' : currentLanguage === 'fr' ? 'Attaque dans' : 'Attack in';
 				const strength = currentLanguage === 'zh-TW' ? '強度' : currentLanguage === 'fr' ? 'Force' : 'Strength';
 				
+				// 根據敵人類型選擇對應圖片
+				let enemyImage = '';
+				if (this.inBattle && this.enemy.type) {
+					if (this.enemy.type === 'monster') {
+						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m1.jpg" alt="普通敵人" style="width: 250px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"></div>';
+					} else if (this.enemy.type === 'elite') {
+						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m3.png" alt="菁英敵人" style="width: 250px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"></div>';
+					} else if (this.enemy.type === 'mini_boss') {
+						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m4.png" alt="小頭目" style="width: 250px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"></div>';
+					}
+				}
+				
 				enemyStatusEl.innerHTML = `
 					<div class="stat-label">${enemyLabel}</div>
 					${this.inBattle ? `
 						<div class="hp-row">${this.enemy.name || enemyLabel}  ${t('hp')}: <span class="hp-text">${this.enemy.hp}/${this.enemy.max_hp}</span></div>
 						<div class="hp-bar"><div class="hp-inner enemy-hp" style="width:${enemyPct}%"></div></div>
+						${enemyImage}
 						<div class="stats-row"><div>${attackCountdown}: ${this.enemy.turnsToAttack}</div><div>${strength}: x${(this.enemy.strength||1).toFixed(2)}</div></div>
 					` : `
 						<div class="hp-row">${noneLabel}</div>
@@ -953,6 +966,8 @@ function genEnemyName(type) {
 			showMessage(`${t('encounterEnemy')} ${type}，${t('enterBattle')}`);
 			// 設定戰鬥狀態與敵人屬性
 			this.inBattle = true;
+			// 儲存敵人類型（用於顯示對應圖片）
+			this.enemy.type = type;
 			// 產生敵人名稱
 			this.enemy.name = genEnemyName(type);
 			showMessage(`${t('encounterEnemyName')}${this.enemy.name}`);
