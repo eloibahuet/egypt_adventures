@@ -302,9 +302,31 @@ function genEnemyName(type) {
 		const it = this.player.inventory[index];
 		if (!it) return;
 		if (it.slot && this.player.equipment.hasOwnProperty(it.slot)) {
+			// 檢查該槽位是否已有裝備，如果有則先卸下放回背包
+			const oldEquipment = this.player.equipment[it.slot];
+			if (oldEquipment) {
+				// 移除舊裝備的屬性加成
+				if (oldEquipment.luck_gold) {
+					this.player.luck_gold = Math.max(0, this.player.luck_gold - (oldEquipment.luck_gold || 0));
+				}
+				if (oldEquipment.max_hp_bonus) {
+					this.player.max_hp = Math.max(1, this.player.max_hp - oldEquipment.max_hp_bonus);
+					this.player.hp = Math.min(this.player.max_hp, this.player.hp);
+				}
+				if (oldEquipment.stamina_bonus) {
+					this.player.max_stamina = Math.max(1, this.player.max_stamina - oldEquipment.stamina_bonus);
+					this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina);
+				}
+				// 將舊裝備放回背包
+				this.player.inventory.push(oldEquipment);
+				showMessage(`卸下 ${oldEquipment.name}，已放入背包。`);
+			}
+			
+			// 裝備新物品
 			this.player.equipment[it.slot] = it;
 			showMessage(`裝備 ${it.name} 到 ${it.slot}`);
-			// 應用裝備屬性加成
+			
+			// 應用新裝備屬性加成
 			if (it.luck_gold) {
 				this.player.luck_gold += it.luck_gold;
 				showMessage(`獲得金幣幸運 +${it.luck_gold}`);
@@ -319,7 +341,7 @@ function genEnemyName(type) {
 				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + it.stamina_bonus);
 				showMessage(`最大體力 +${it.stamina_bonus}`);
 			}
-			// 從背包中移除（簡單處理）
+			// 從背包中移除新裝備
 			this.player.inventory.splice(index,1);
 			this.updateStatus();
 		} else {
@@ -1540,9 +1562,17 @@ function genEnemyName(type) {
 		}
 
 		applySlotResults(results) {
-			// 以左邊第一格（results[0]）為主要符號，第二與第三格若相同則放大效果
+			// 以左邊第一格（results[0]）為主要符號，只計算從左邊開始的連續相同符號數
 			const primary = results[0];
-			const matchCount = results.filter(s => s === primary).length; // 1..3
+			let matchCount = 1; // 至少有第一格
+			if (results[1] === primary) {
+				matchCount = 2;
+				if (results[2] === primary) {
+					matchCount = 3;
+				}
+			}
+			// 三格相同時額外2.5倍加成（相當於2格效果的2.5倍）
+			const tripleBonus = matchCount === 3 ? 2.5 : 1;
 			// 計算本回合的連續 combo（包含當前格）並顯示
 			// 若上一回合主符號與本回合相同，previousCombo 為先前計數，effectiveCombo = previousCombo + 1
 			const previousCombo = (this.inBattle && this.consecutivePrimarySymbol === primary) ? this.consecutivePrimaryCount : 0;
@@ -1550,12 +1580,15 @@ function genEnemyName(type) {
 			// 每多一層 combo (effectiveCombo-1) 增加 12% 效果（可調）
 			const comboMultiplier = 1 + 0.12 * (effectiveCombo - 1);
 			// 簡短提示主要符號、匹配數與當前 combo
-			showMessage(`主要符號：${primary}，匹配數：${matchCount}，連續 x${effectiveCombo}（乘數 x${comboMultiplier.toFixed(2)}）`);
+			const bonusMsg = matchCount === 3 ? '【三連加成 x2.5】' : '';
+			showMessage(`主要符號：${primary}，匹配數：${matchCount}${bonusMsg}，連續 x${effectiveCombo}（乘數 x${comboMultiplier.toFixed(2)}）`);
 
 			switch (primary) {
 				case '⚔️': {
 					// 計算暴擊機率（受戰鬥幸運影響），並套用暴擊倍率
 					let baseDmg = 15 * matchCount; // 每格基礎 15
+					// 套用三連加成
+					baseDmg = Math.round(baseDmg * tripleBonus);
 					// 套用 combo 乘數
 					baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
 					const weaponAtk = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
@@ -1571,6 +1604,8 @@ function genEnemyName(type) {
 				}
 				case '⚡️': {
 					let baseDmg = 25 * matchCount; // 每格基礎 25
+					// 套用三連加成
+					baseDmg = Math.round(baseDmg * tripleBonus);
 					// 套用 combo 乘數
 					baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
 					const weaponAtk2 = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
@@ -1592,6 +1627,8 @@ function genEnemyName(type) {
 				}
 				case '🛡️': {
 					let shieldGain = 10 * matchCount; // 每格 +10 護盾
+					// 套用三連加成
+					shieldGain = Math.round(shieldGain * tripleBonus);
 					shieldGain = Math.max(1, Math.round(shieldGain * comboMultiplier));
 					this.player.shield += shieldGain;
 					showMessage(`你獲得防禦 x${matchCount}（連擊 x${effectiveCombo}），護盾 +${shieldGain}。`);
@@ -1599,19 +1636,30 @@ function genEnemyName(type) {
 				}
 				case '🧪': {
 					let hpGain = 30 * matchCount; // 每格 +30 HP
+					// 套用三連加成
+					hpGain = Math.round(hpGain * tripleBonus);
 					hpGain = Math.max(1, Math.round(hpGain * comboMultiplier));
 					this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
-					showMessage(`使用紅色水瓶 x${matchCount}（連擊 x${effectiveCombo}），回復 HP ${hpGain}。`);
+					// 同時恢復體力（每格 +15 體力）
+					let staminaGain = 15 * matchCount;
+					// 套用三連加成
+					staminaGain = Math.round(staminaGain * tripleBonus);
+					staminaGain = Math.max(1, Math.round(staminaGain * comboMultiplier));
+					this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
+					showMessage(`使用紅色水瓶 x${matchCount}（連擊 x${effectiveCombo}），回復 HP ${hpGain}、體力 ${staminaGain}。`);
 					break;
 				}
 				case '⭐': {
-					this.player.luck_combat += matchCount; // 每格 +1 戰鬥幸運
-					showMessage(`獲得戰鬥幸運 +${matchCount}，提高暴擊與閃避機率。`);
+					let luckGain = matchCount * tripleBonus; // 每格 +1 戰鬥幸運，三連x5
+					this.player.luck_combat += luckGain;
+					showMessage(`獲得戰鬥幸運 +${luckGain}，提高暴擊與閃避機率。`);
 					break;
 				}
 				case '💀': {
 					// 降低符號造成的直接傷害以利入門玩家
-					const rawDmg = 10 * matchCount; // 調整為每格 10 傷害
+					let rawDmg = 10 * matchCount; // 調整為每格 10 傷害
+					// 套用三連加成
+					rawDmg = Math.round(rawDmg * tripleBonus);
 					// 玩家有閃避機率（受幸運和護甲影響）
 					const armorDodgeSkull = this.player.equipment.armor ? (this.player.equipment.armor.dodge_rate || 0) : 0;
 					const dodgeChanceSkull = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodgeSkull / 100);
@@ -1630,6 +1678,8 @@ function genEnemyName(type) {
 					// 每格給予固定金幣（可再調整）
 					const coinValue = 20;
 					let got = coinValue * matchCount;
+					// 套用三連加成
+					got = Math.round(got * tripleBonus);
 					got = Math.max(1, Math.round(got * comboMultiplier));
 					this.player.gold += got;
 					showMessage(`獲得金幣 ${got}（💰 x${matchCount}，連擊 x${effectiveCombo}）。`);
@@ -2005,26 +2055,56 @@ function startAutoSpinLoop() {
 		stopOne(0).then(()=> {
 			// 第二和第三軸直接停止，無延遲動畫
 			const stopInstantly = (index) => {
-				const targetSymbol = pickWeightedSymbol();
-				const strip = reels[index].querySelector('.strip');
-				reelState[index].spinning = false;
-				if (reelState[index].raf) cancelAnimationFrame(reelState[index].raf);
-				
-				const targetIdx = SYMBOLS.indexOf(targetSymbol);
-				const symbolIndex = targetIdx >= 0 ? targetIdx : 0;
-				const finalPos = symbolIndex * SYMBOL_HEIGHT + 30;
-				
-				strip.style.transition = 'transform 0.15s ease-out';
-				strip.style.transform = `translateY(-${finalPos}px)`;
-				
-				results[index] = targetSymbol;
+				return new Promise((resolve) => {
+					const targetSymbol = pickWeightedSymbol();
+					const strip = reels[index].querySelector('.strip');
+					reelState[index].spinning = false;
+					if (reelState[index].raf) cancelAnimationFrame(reelState[index].raf);
+					
+					const targetIdx = SYMBOLS.indexOf(targetSymbol);
+					const symbolIndex = targetIdx >= 0 ? targetIdx : 0;
+					
+					// 計算當前位置並找到最近的符號循環位置
+					let currentPos = reelState[index].anim ? reelState[index].anim.pos : 0;
+					const repeats = 8;
+					const totalHeight = SYMBOLS.length * SYMBOL_HEIGHT * repeats;
+					const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT;
+					const baseCycle = Math.floor(currentPos / singleBlock);
+					
+					// 目標位置：在當前循環中的符號位置
+					const finalPos = (baseCycle * singleBlock + symbolIndex * SYMBOL_HEIGHT + 30) % totalHeight;
+					
+					strip.style.transition = 'transform 0.15s ease-out';
+					strip.style.transform = `translateY(-${finalPos}px)`;
+					
+					// 等待動畫完成後讀取實際顯示的符號
+					setTimeout(() => {
+						try {
+							const rect = reels[index].getBoundingClientRect();
+							const cx = rect.left + rect.width / 2;
+							const cy = rect.top + rect.height / 2;
+							let el = document.elementFromPoint(cx, cy);
+							while (el && !el.classList.contains('symbol')) {
+								el = el.parentElement;
+							}
+							const landedSymbol = el ? el.textContent.trim() : targetSymbol;
+							if (landedSymbol && SYMBOLS.includes(landedSymbol)) {
+								results[index] = landedSymbol;
+							} else {
+								results[index] = targetSymbol;
+							}
+						} catch (e) {
+							results[index] = targetSymbol;
+						}
+						resolve();
+					}, 200);
+				});
 			};
 			
-			stopInstantly(1);
-			stopInstantly(2);
-			
-			// 等待短暫的CSS動畫完成
-			return new Promise(resolve => setTimeout(resolve, 200));
+			return Promise.all([stopInstantly(1), stopInstantly(2)]);
+		}).then(()=> {
+			// 再次等待確保所有動畫完成
+			return new Promise(resolve => setTimeout(resolve, 50));
 		}).then(()=> {
 			showMessage(`插槽結果： ${results.join(' | ')}`);
 			// 把結果傳給遊戲邏輯進行處理（attack/skill/defend/enemy）
