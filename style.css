@@ -541,6 +541,8 @@ body::after {
     background: linear-gradient(180deg,#fff,#fff8eb);
     border-radius: 8px;
     border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
+    z-index: 5;
 }
 
 #slot-center {
@@ -571,36 +573,8 @@ body::after {
     border-left: 5px solid #654321;
     border-right: 5px solid #654321;
     position: relative;
-    z-index: 5;
+    z-index: 10;
     overflow: hidden;
-}
-
-/* 象形文字裝飾角 - 超清晰版 */
-.status-box-side::before {
-    content: '𓆣 𓁹';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    color: #b8860b;
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 5px;
-    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
-    z-index: -1;
-}
-
-.status-box-side::after {
-    content: '𓁹 𓆣';
-    position: absolute;
-    bottom: 3px;
-    right: 3px;
-    color: #b8860b;
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 5px;
-    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
-    transform: rotate(180deg);
-    z-index: -1;
 }
 
 .status-box-side .stat-label {
@@ -610,6 +584,13 @@ body::after {
     text-align: center;
     position: relative;
     z-index: 6;
+}
+
+/* 角色資訊框 - 完全不透明背景遮蓋右側象形文字 */
+#player-status {
+    background: 
+        repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(139, 69, 19, 0.04) 3px, rgba(139, 69, 19, 0.04) 6px),
+        linear-gradient(180deg, #faf5eb 0%, #f5ead6 50%, #f0dfc8 100%) !important;
 }
 
 /* 角色資訊下方 - 守護神祇（1.jpg） */
