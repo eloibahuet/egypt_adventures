@@ -1839,7 +1839,9 @@ function genEnemyName(type) {
 								rareChance = 40; // 40% 稀有
 								// 精英掉落1-2件
 								const dropCount = 1 + Math.floor(Math.random() * 2);
-								if (Math.random() * 100 < dropChance) {
+								const dropRoll = Math.random() * 100;
+								console.log(`Elite drop check: roll=${dropRoll}, chance=${dropChance}, count=${dropCount}`);
+								if (dropRoll < dropChance) {
 									showMessage(`⚔️ 精英掉落 ${dropCount} 件裝備！`);
 									for (let i = 0; i < dropCount; i++) {
 										const roll = Math.random() * 100;
@@ -1850,8 +1852,11 @@ function genEnemyName(type) {
 										const baseItem = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 										dropped = cloneItem(baseItem, rarity);
 										this.player.inventory.push(dropped);
+										console.log(`Elite dropped item ${i+1}:`, dropped.name, rarity);
 										showMessage(`  獲得 ${this.formatItem(dropped)}`);
 									}
+								} else {
+									console.log('Elite drop failed:', dropRoll, '>=', dropChance);
 								}
 							} else {
 								// 普通敵人掉落
@@ -2263,10 +2268,20 @@ function startAutoSpinLoop() {
 				normalMapSteps: game.normalMapSteps,
 				timestamp: Date.now()
 			};
-			localStorage.setItem('egypt_adventures_save', JSON.stringify(saveData));
-			showMessage('💾 遊戲已儲存！');
+			const saveString = JSON.stringify(saveData);
+			localStorage.setItem('egypt_adventures_save', saveString);
+			
+			// 驗證儲存是否成功
+			const verify = localStorage.getItem('egypt_adventures_save');
+			if (verify && verify === saveString) {
+				const saveDate = new Date(saveData.timestamp);
+				showMessage(`💾 遊戲已儲存！(等級 ${game.player.level}, 金幣 ${game.player.gold}, 時間 ${saveDate.toLocaleTimeString('zh-TW')})`);
+			} else {
+				showMessage('⚠️ 儲存可能失敗，請檢查瀏覽器設定是否允許 localStorage');
+			}
 		} catch (e) {
 			showMessage('❌ 儲存失敗：' + e.message);
+			console.error('Save error:', e);
 		}
 	});
 
@@ -2274,9 +2289,10 @@ function startAutoSpinLoop() {
 		try {
 			const saveData = localStorage.getItem('egypt_adventures_save');
 			if (!saveData) {
-				showMessage('❌ 找不到存檔！');
+				showMessage('❌ 找不到存檔！請先點擊「儲存」按鈕建立存檔。');
 				return;
 			}
+			console.log('Load data length:', saveData.length);
 			const data = JSON.parse(saveData);
 			
 			// 還原玩家狀態
