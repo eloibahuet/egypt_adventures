@@ -279,7 +279,7 @@ function genEnemyName(type) {
 
 		addXP(amount) {
 			this.player.xp += amount;
-			showMessage(`獲得經驗值 ${amount}。`);
+			showMessage(`${t('gainedExp')} ${amount}。`);
 			// 自動升級迴圈（支援多等級升級）
 			while (this.player.level < 99 && this.player.xp >= this.xpForNext(this.player.level)) {
 				const need = this.xpForNext(this.player.level);
@@ -459,31 +459,31 @@ function genEnemyName(type) {
 			
 			// 裝備新物品
 			this.player.equipment[it.slot] = it;
-			showMessage(`裝備 ${it.name} 到 ${it.slot}`);
+			showMessage(`${t('equipTo')} ${it.name} ${t('to')} ${it.slot}`);
 			
 			// 應用新裝備屬性加成
 			if (it.luck_gold) {
 				this.player.luck_gold += it.luck_gold;
-				showMessage(`獲得金幣幸運 +${it.luck_gold}`);
+				showMessage(`${t('gainedGoldLuck')} +${it.luck_gold}`);
 			}
 			if (it.max_hp_bonus) {
 				this.player.max_hp += it.max_hp_bonus;
 				this.player.hp = Math.min(this.player.max_hp, this.player.hp + it.max_hp_bonus);
-				showMessage(`最大生命 +${it.max_hp_bonus}`);
+				showMessage(`${t('maxHpBonus')} +${it.max_hp_bonus}`);
 			}
 			if (it.stamina_bonus) {
 				this.player.max_stamina += it.stamina_bonus;
 				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + it.stamina_bonus);
-				showMessage(`最大體力 +${it.stamina_bonus}`);
+				showMessage(`${t('maxStaminaBonus')} +${it.stamina_bonus}`);
 			}
 			// 從背包中移除新裝備
 			this.player.inventory.splice(index,1);
 			this.updateStatus();
 		} else {
-			showMessage('此物品無法裝備。');
+			showMessage(t('cannotEquip'));
 		}
 	}		unequipItem(slot) {
-			if (!this.player.equipment || !this.player.equipment[slot]) { showMessage('此欄位沒有裝備。'); return; }
+			if (!this.player.equipment || !this.player.equipment[slot]) { showMessage(t('noEquipmentInSlot')); return; }
 		const it = this.player.equipment[slot];
 		this.player.inventory.push(it);
 		this.player.equipment[slot] = null;
@@ -491,17 +491,17 @@ function genEnemyName(type) {
 		// 移除裝備屬性加成
 		if (it.luck_gold) {
 			this.player.luck_gold = Math.max(0, this.player.luck_gold - (it.luck_gold||0));
-			showMessage(`金幣幸運 -${it.luck_gold}（剩餘 ${this.player.luck_gold}）。`);
+			showMessage(`${t('goldLuckRemaining')} -${it.luck_gold}（${t('remaining')} ${this.player.luck_gold}）。`);
 		}
 		if (it.max_hp_bonus) {
 			this.player.max_hp = Math.max(1, this.player.max_hp - it.max_hp_bonus);
 			this.player.hp = Math.min(this.player.max_hp, this.player.hp);
-			showMessage(`最大生命 -${it.max_hp_bonus}`);
+			showMessage(`${t('maxHpBonus')} -${it.max_hp_bonus}`);
 		}
 		if (it.stamina_bonus) {
 			this.player.max_stamina = Math.max(1, this.player.max_stamina - it.stamina_bonus);
 			this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina);
-			showMessage(`最大體力 -${it.stamina_bonus}`);
+			showMessage(`${t('maxStaminaBonus')} -${it.stamina_bonus}`);
 		}
 		this.updateStatus();
 	}		updateStatus() {
@@ -896,7 +896,7 @@ function genEnemyName(type) {
 		}
 
 		nextMap() {
-			showMessage('成功走出沙漠，進入下一張地圖，難度提升！');
+			showMessage(t('desertCleared'));
 			this.map_steps = 0;
 			this.difficulty += 1;
 			this.map_goal += 5;
@@ -943,19 +943,19 @@ function genEnemyName(type) {
 			} else if (event === 'empty') {
 				this.emptyEvent();
 			} else {
-				showMessage('什麼都沒發生。');
+				showMessage(t('nothingHappened'));
 			}
 		}
 
 		battle(type) {
 			// 進入戰鬥時強制停止自動旋轉與禁用 auto 按鈕
 			try { stopAutoSpinLoop(); } catch(e) {}
-			showMessage(`遭遇 ${type}，進入插槽戰鬥！`);
+			showMessage(`${t('encounterEnemy')} ${type}，${t('enterBattle')}`);
 			// 設定戰鬥狀態與敵人屬性
 			this.inBattle = true;
 			// 產生敵人名稱
 			this.enemy.name = genEnemyName(type);
-			showMessage(`遭遇敵人：${this.enemy.name}`);
+			showMessage(`${t('encounterEnemyName')}${this.enemy.name}`);
 			// 戰鬥開始時停用移動按鈕
 			const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
 			const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
@@ -982,7 +982,7 @@ function genEnemyName(type) {
 			
 			if (this.inPyramid) {
 				this.enemy.name += ` (金字塔-地圖${this.difficulty})`;
-				showMessage(`⚠️ 金字塔敵人實力強大！血量x${hpMultiplier.toFixed(1)}、攻擊x${atkMultiplier.toFixed(1)}、強度x${strengthBonus.toFixed(1)}`);
+				showMessage(`${t('pyramidEnemyStrong')}${hpMultiplier.toFixed(1)}、${t('attackX')}${atkMultiplier.toFixed(1)}、${t('strengthX')}${strengthBonus.toFixed(1)}`);
 			}
 			this.enemy.hp = this.enemy.max_hp;
 		this.enemy.turnsToAttack = 3;

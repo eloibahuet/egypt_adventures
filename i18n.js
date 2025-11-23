@@ -222,7 +222,168 @@ const TRANSLATIONS = {
 		language: '語言',
 		languageChinese: '繁體中文',
 		languageEnglish: 'English',
-		languageFrench: 'Français'
+		languageFrench: 'Français',
+		
+		// Equipment system
+		gainedExp: '獲得經驗值',
+		equipTo: '裝備',
+		to: '到',
+		gainedGoldLuck: '獲得金幣幸運',
+		maxHpBonus: '最大生命',
+		maxStaminaBonus: '最大體力',
+		cannotEquip: '此物品無法裝備。',
+		noEquipmentInSlot: '此欄位沒有裝備。',
+		goldLuckRemaining: '金幣幸運',
+		remaining: '剩餘',
+		
+		// Map progress
+		desertCleared: '成功走出沙漠，進入下一張地圖，難度提升！',
+		nothingHappened: '什麼都沒發生。',
+		
+		// Battle system
+		encounterEnemy: '遭遇',
+		enterBattle: '進入插槽戰鬥！',
+		encounterEnemyName: '遭遇敵人：',
+		pyramidEnemyStrong: '⚠️ 金字塔敵人實力強大！血量x',
+		attackX: '攻擊x',
+		strengthX: '強度x',
+		notInBattle: '目前不在戰鬥中。',
+		fleeSuccess: '你成功逃離戰鬥！',
+		fleeFailed: '逃跑失敗！敵人獲得一次攻擊機會！',
+		dodgedAttack: '你閃避了敵人的自動普攻！(戰鬥幸運',
+		enemyAutoAttack: '敵人自動普攻，造成',
+		damageText: '傷害',
+		shieldAbsorbed: '護盾吸收',
+		playerHp: '玩家 HP',
+		
+		// Caravan events
+		caravanMet: '遇到商隊：若資金足夠可補給藥水（50金/瓶）。',
+		supplySuccess: '補給成功，藥水+1',
+		supplyNoGold: '金幣不足，無法購買補給。',
+		blackMarketMet: '遇到黑市商人：能在黑市中獲得普通到史詩級裝備，此為賭博交易，最多購買兩件。',
+		blackMarketError: '（系統錯誤：黑市介面未載入）',
+		
+		// Dead traveler events
+		foundEquipmentOnBody: '⚔️ 你在遺體旁找到了',
+		addedToInventoryMsg: '（已加入背包）',
+		foundGoldAndItem: '💰 你找到了',
+		goldCoinsText: '金幣和',
+		foundGoldOnly: '💰 你在遺體旁找到了',
+		goldCoinsEnd: '金幣。',
+		travelerNothing: '🕊️ 你為旅人默哀，但身上已經沒有任何有價值的東西了。',
+		travelerDecayed: '💨 遺體和裝備都已被風沙侵蝕，無法使用。',
+		travelerScorpions: '🦂 遺體周圍有毒蠍的痕跡，你謹慎地離開了，什麼也沒拿。',
+		minorInjury: '（小心離開時受到輕傷',
+		hpLoss: 'HP）',
+		
+		// Temple events
+		templeFound: '🛕 你發現了一座古老的神殿廢墟...',
+		templeBlessingMaxHp: '✨ 神殿的祝福降臨！最大HP',
+		templeBlessingCombatLuck: '✨ 神殿的祝福降臨！戰鬥幸運',
+		templeBlessingGoldLuck: '✨ 神殿的祝福降臨！金幣幸運',
+		templeTreasure: '💎 你在神殿中找到了古老的寶藏！獲得',
+		curseDamage: '受到詛咒傷害',
+		trapTriggered: '💥 你觸發了古老的陷阱！',
+		trapDamage: '陷阱造成',
+		pointDamage: '點傷害！',
+		
+		// Caravan rest events
+		caravanRestMet: '🐪 你遇到了一支商隊正在休息...',
+		boughtPotions: '🧪 你向商隊購買了2瓶藥水（花費60金幣）',
+		caravanNoGold: '商隊願意交易，但你的金幣不足（需要60金幣）。',
+		caravanGiftGold: '💰 商隊隊長贈送你一些金幣（+',
+		thankYou: '）以答謝你的到來。',
+		caravanGiftPotion: '🧪 商隊贈送你一瓶藥水以表善意。',
+		caravanKnowledge: '📜 商隊分享了沙漠中的生存經驗和地圖情報。',
+		caravanBandits: '⚔️ 這是一群偽裝的盜賊！',
+		
+		// Nomad camp events
+		nomadCampMet: '⛺ 你遇到了一個遊牧民族的營地...',
+		nomadHospitality: '🏕️ 遊牧民熱情地接待了你，提供食物和休息。',
+		hpRestore: 'HP',
+		staminaRestore: '體力',
+		nomadGiftItem: '🎁 遊牧民贈送你一件',
+		nomadLegends: '📖 遊牧民告訴你關於沙漠的古老傳說和秘密。',
+		gainedExpAndGold: '獲得經驗值和',
+		nomadHostile: '⚔️ 這個部落對外來者不友善！',
+		
+		// Quicksand events
+		quicksandTrapped: '⚠️ 你踩到了流沙！',
+		quicksandEscaped: '💨 你迅速脫離了流沙區域！',
+		staminaConsumed: '消耗體力',
+		quicksandDeep: '💀 你陷入流沙深處，幾乎要窒息！',
+		potionBroken: '🧪 在掙扎中不小心打破了一瓶藥水（-1藥水）',
+		
+		// Scorpion events
+		scorpionNest: '🦂 你無意中闖入了毒蠍的巢穴！',
+		scorpionAvoided: '🏃 你小心地繞過毒蠍，成功避開了危險！',
+		scorpionStung: '😣 你被毒蠍蜇了一下！',
+		poisonDamage: '受到毒素傷害',
+		scorpionSwarm: '💀 多隻毒蠍攻擊了你！',
+		hpStaminaLoss: 'HP',
+		scorpionTreasure: '✨ 在躲避毒蠍時，你發現了牠們守護的寶藏！',
+		gainedGold: '獲得',
+		
+		// Ancient ruins events
+		ruinsFound: '🏛️ 你發現了一處古代遺跡...',
+		foundArtifact: '⚱️ 你在遺跡中找到了古代神器',
+		ruinsKnowledge: '📜 你研究了遺跡上的銘文，獲得了古老的知識。',
+		ruinsTrap: '💥 你觸發了遺跡的守護機關！',
+		receivedDamage: '受到',
+		ruinsGuardian: '👹 遺跡的守護者被喚醒了！',
+		
+		// Trading post events
+		tradingPostFound: '🏪 你發現了一個沙漠驛站！',
+		tradingPostDesc: '這裡可以補給物資，也可以出售你不需要的裝備。',
+		soldItem: '💰 賣出',
+		obtainedGold: '獲得',
+		boughtPotion: '🧪 購買藥水 x1',
+		boughtFood: '🍖 購買食物，HP +30，體力 +15',
+		fullRestore: '💊 完全恢復！HP和體力全滿！',
+		notEnoughGoldShop: '❌ 金幣不足！',
+		leftTradingPost: '你離開了驛站，繼續踏上旅程。',
+		
+		// God events
+		godMet: '遇到古埃及神祇，獲得祝福或詛咒（隨機）。',
+		godBlessingGold: '獲得祝福：金幣',
+		goldLuckBonus2: '（含金幣幸運加成',
+		goldLuckDecreased: '金幣幸運',
+		godBlessingSimple: '獲得祝福：金幣 +50',
+		godCurse: '受到詛咒：HP -15',
+		
+		// Pyramid events
+		pyramidFound: '🔺 你發現了一座古老的金字塔！',
+		pyramidDanger: '這裡充滿危險，但也蘊藏著巨大的寶藏...',
+		pyramidInfo: '金字塔副本：8步探險，敵人強度極高（隨地圖提升），獎勵豐厚（15倍經驗/金幣），保證掉落優良以上裝備！',
+		declinePyramid: '你決定不進入金字塔，繼續前行。',
+		enterPyramid: '⚡ 你踏入了金字塔深處...',
+		pyramidStart: '🔺 金字塔副本開始！你有 8 步探險機會。',
+		exitPyramid: '🌅 你走出了金字塔，回到了沙漠中。',
+		pyramidComplete: '金字塔副本完成！探索了',
+		stepCount: '步。',
+		
+		// Slot battle results
+		slotResult: '主要符號：',
+		matchCount: '，匹配數：',
+		consecutive: '，連續',
+		multiplier: '（乘數',
+		normalAttack: '你發動普通攻擊',
+		skillAttack: '你使用技能',
+		causingDamage: '，對敵人造成',
+		defenseGain: '你獲得防禦',
+		combo: '（連擊',
+		shieldGain: '），護盾',
+		potionUse: '使用紅色水瓶',
+		restoreHp: '，回復 HP',
+		restoreStamina: '體力',
+		luckGain: '獲得戰鬥幸運',
+		improveRate: '，提高暴擊與閃避機率。',
+		dodgedSymbolAttack: '你閃避了敵人符號攻擊（戰鬥幸運',
+		critText: '（暴擊）',
+		
+		// Misc
+		strangerMerchant: '🏪 陌生人原來是個特殊商人！',
+		bonus: '加成'
 	},
 	
 	'en': {
@@ -447,7 +608,168 @@ const TRANSLATIONS = {
 		language: 'Language',
 		languageChinese: '繁體中文',
 		languageEnglish: 'English',
-		languageFrench: 'Français'
+		languageFrench: 'Français',
+		
+		// Equipment system
+		gainedExp: 'Gained experience',
+		equipTo: 'Equipped',
+		to: 'to',
+		gainedGoldLuck: 'Gained Gold Luck',
+		maxHpBonus: 'Max HP',
+		maxStaminaBonus: 'Max Stamina',
+		cannotEquip: 'Cannot equip this item.',
+		noEquipmentInSlot: 'No equipment in this slot.',
+		goldLuckRemaining: 'Gold Luck',
+		remaining: 'remaining',
+		
+		// Map progress
+		desertCleared: 'Successfully crossed the desert, entering next map with increased difficulty!',
+		nothingHappened: 'Nothing happened.',
+		
+		// Battle system
+		encounterEnemy: 'Encountered',
+		enterBattle: 'entering slot battle!',
+		encounterEnemyName: 'Encountered enemy:',
+		pyramidEnemyStrong: '⚠️ Pyramid enemy is extremely powerful! HP x',
+		attackX: 'Attack x',
+		strengthX: 'Strength x',
+		notInBattle: 'Not currently in battle.',
+		fleeSuccess: 'You successfully fled from battle!',
+		fleeFailed: 'Flee failed! Enemy gets a free attack!',
+		dodgedAttack: 'You dodged enemy auto attack! (Combat Luck',
+		enemyAutoAttack: 'Enemy auto attack, dealing',
+		damageText: 'damage',
+		shieldAbsorbed: 'shield absorbed',
+		playerHp: 'Player HP',
+		
+		// Caravan events
+		caravanMet: 'Met a caravan: Can purchase potions if you have enough gold (50 gold/potion).',
+		supplySuccess: 'Supply successful, potion +1',
+		supplyNoGold: 'Not enough gold to purchase supplies.',
+		blackMarketMet: 'Met black market merchant: Can obtain Common~Epic equipment through gambling, max 2 items.',
+		blackMarketError: '(System error: Black market interface not loaded)',
+		
+		// Dead traveler events
+		foundEquipmentOnBody: '⚔️ You found',
+		addedToInventoryMsg: '(added to inventory)',
+		foundGoldAndItem: '💰 You found',
+		goldCoinsText: 'gold and',
+		foundGoldOnly: '💰 You found',
+		goldCoinsEnd: 'gold near the body.',
+		travelerNothing: '🕊️ You mourned the traveler, but nothing valuable remains.',
+		travelerDecayed: '💨 The body and equipment have been eroded by sandstorms, unusable.',
+		travelerScorpions: '🦂 There are scorpion traces around the body, you carefully left without taking anything.',
+		minorInjury: '(Minor injury while leaving',
+		hpLoss: 'HP)',
+		
+		// Temple events
+		templeFound: '🛕 You discovered ancient temple ruins...',
+		templeBlessingMaxHp: '✨ The temple\'s blessing descends! Max HP',
+		templeBlessingCombatLuck: '✨ The temple\'s blessing descends! Combat Luck',
+		templeBlessingGoldLuck: '✨ The temple\'s blessing descends! Gold Luck',
+		templeTreasure: '💎 You found ancient treasure in the temple! Obtained',
+		curseDamage: 'Curse damage taken',
+		trapTriggered: '💥 You triggered an ancient trap!',
+		trapDamage: 'Trap dealt',
+		pointDamage: 'damage!',
+		
+		// Caravan rest events
+		caravanRestMet: '🐪 You encountered a resting caravan...',
+		boughtPotions: '🧪 You bought 2 potions from the caravan (cost 60 gold)',
+		caravanNoGold: 'The caravan is willing to trade, but you don\'t have enough gold (need 60 gold).',
+		caravanGiftGold: '💰 The caravan leader gave you some gold (+',
+		thankYou: ') as thanks for your visit.',
+		caravanGiftPotion: '🧪 The caravan gave you a potion as a gesture of goodwill.',
+		caravanKnowledge: '📜 The caravan shared desert survival experience and map intelligence.',
+		caravanBandits: '⚔️ These are bandits in disguise!',
+		
+		// Nomad camp events
+		nomadCampMet: '⛺ You encountered a nomad camp...',
+		nomadHospitality: '🏕️ The nomads warmly welcomed you, providing food and rest.',
+		hpRestore: 'HP',
+		staminaRestore: 'Stamina',
+		nomadGiftItem: '🎁 The nomads gave you',
+		nomadLegends: '📖 The nomads told you ancient desert legends and secrets.',
+		gainedExpAndGold: 'Gained experience and',
+		nomadHostile: '⚔️ This tribe is hostile to outsiders!',
+		
+		// Quicksand events
+		quicksandTrapped: '⚠️ You stepped into quicksand!',
+		quicksandEscaped: '💨 You quickly escaped the quicksand area!',
+		staminaConsumed: 'Consumed stamina',
+		quicksandDeep: '💀 You sank deep into quicksand, nearly suffocating!',
+		potionBroken: '🧪 Accidentally broke a potion while struggling (-1 potion)',
+		
+		// Scorpion events
+		scorpionNest: '🦂 You accidentally entered a scorpion nest!',
+		scorpionAvoided: '🏃 You carefully avoided the scorpions, successfully evading danger!',
+		scorpionStung: '😣 You were stung by a scorpion!',
+		poisonDamage: 'Poison damage taken',
+		scorpionSwarm: '💀 Multiple scorpions attacked you!',
+		hpStaminaLoss: 'HP',
+		scorpionTreasure: '✨ While avoiding scorpions, you found their guarded treasure!',
+		gainedGold: 'Gained',
+		
+		// Ancient ruins events
+		ruinsFound: '🏛️ You discovered ancient ruins...',
+		foundArtifact: '⚱️ You found an ancient artifact in the ruins',
+		ruinsKnowledge: '📜 You studied the inscriptions on the ruins, gaining ancient knowledge.',
+		ruinsTrap: '💥 You triggered the ruins\' defensive mechanism!',
+		receivedDamage: 'Received',
+		ruinsGuardian: '👹 The ruins\' guardian has awakened!',
+		
+		// Trading post events
+		tradingPostFound: '🏪 You found a desert trading post!',
+		tradingPostDesc: 'Here you can resupply and sell unneeded equipment.',
+		soldItem: '💰 Sold',
+		obtainedGold: 'obtained',
+		boughtPotion: '🧪 Bought potion x1',
+		boughtFood: '🍖 Bought food, HP +30, Stamina +15',
+		fullRestore: '💊 Full recovery! HP and Stamina fully restored!',
+		notEnoughGoldShop: '❌ Not enough gold!',
+		leftTradingPost: 'You left the trading post and continued your journey.',
+		
+		// God events
+		godMet: 'Met an ancient Egyptian deity, received blessing or curse (random).',
+		godBlessingGold: 'Received blessing: Gold',
+		goldLuckBonus2: '(including Gold Luck bonus',
+		goldLuckDecreased: 'Gold Luck',
+		godBlessingSimple: 'Received blessing: Gold +50',
+		godCurse: 'Received curse: HP -15',
+		
+		// Pyramid events
+		pyramidFound: '🔺 You discovered an ancient pyramid!',
+		pyramidDanger: 'Filled with danger, but also great treasures...',
+		pyramidInfo: 'Pyramid dungeon: 8-step exploration, extremely powerful enemies (scales with map), generous rewards (15x exp/gold), guaranteed Fine+ equipment drop!',
+		declinePyramid: 'You decided not to enter the pyramid and continued onward.',
+		enterPyramid: '⚡ You stepped into the pyramid depths...',
+		pyramidStart: '🔺 Pyramid dungeon started! You have 8 exploration steps.',
+		exitPyramid: '🌅 You exited the pyramid and returned to the desert.',
+		pyramidComplete: 'Pyramid dungeon complete! Explored',
+		stepCount: 'steps.',
+		
+		// Slot battle results
+		slotResult: 'Main symbol:',
+		matchCount: ', Matches:',
+		consecutive: ', Consecutive',
+		multiplier: '(Multiplier',
+		normalAttack: 'You launched normal attack',
+		skillAttack: 'You used skill',
+		causingDamage: ', dealing',
+		defenseGain: 'You gained defense',
+		combo: '(Combo',
+		shieldGain: '), Shield',
+		potionUse: 'Used red potion',
+		restoreHp: ', restored HP',
+		restoreStamina: 'Stamina',
+		luckGain: 'Gained Combat Luck',
+		improveRate: ', improving critical and dodge chance.',
+		dodgedSymbolAttack: 'You dodged enemy symbol attack (Combat Luck',
+		critText: '(Critical)',
+		
+		// Misc
+		strangerMerchant: '🏪 The stranger turned out to be a special merchant!',
+		bonus: 'bonus'
 	},
 	
 	'fr': {
@@ -672,7 +994,168 @@ const TRANSLATIONS = {
 		language: 'Langue',
 		languageChinese: '繁體中文',
 		languageEnglish: 'English',
-		languageFrench: 'Français'
+		languageFrench: 'Français',
+		
+		// Equipment system
+		gainedExp: 'Expérience gagnée',
+		equipTo: 'Équipé',
+		to: 'à',
+		gainedGoldLuck: 'Chance d\'Or gagnée',
+		maxHpBonus: 'PV Max',
+		maxStaminaBonus: 'Endurance Max',
+		cannotEquip: 'Impossible d\'équiper cet objet.',
+		noEquipmentInSlot: 'Aucun équipement dans cet emplacement.',
+		goldLuckRemaining: 'Chance d\'Or',
+		remaining: 'restant',
+		
+		// Map progress
+		desertCleared: 'Traversée du désert réussie, entrée dans la prochaine carte avec difficulté accrue !',
+		nothingHappened: 'Il ne s\'est rien passé.',
+		
+		// Battle system
+		encounterEnemy: 'Rencontré',
+		enterBattle: 'entrée en combat de machines à sous !',
+		encounterEnemyName: 'Ennemi rencontré :',
+		pyramidEnemyStrong: '⚠️ L\'ennemi de la pyramide est extrêmement puissant ! PV x',
+		attackX: 'Attaque x',
+		strengthX: 'Force x',
+		notInBattle: 'Pas actuellement en combat.',
+		fleeSuccess: 'Vous avez réussi à fuir le combat !',
+		fleeFailed: 'Fuite échouée ! L\'ennemi obtient une attaque gratuite !',
+		dodgedAttack: 'Vous avez esquivé l\'attaque auto ennemie ! (Chance de Combat',
+		enemyAutoAttack: 'Attaque auto ennemie, infligeant',
+		damageText: 'dégâts',
+		shieldAbsorbed: 'bouclier absorbé',
+		playerHp: 'PV du joueur',
+		
+		// Caravan events
+		caravanMet: 'Rencontré une caravane : Peut acheter des potions si vous avez assez d\'or (50 or/potion).',
+		supplySuccess: 'Approvisionnement réussi, potion +1',
+		supplyNoGold: 'Pas assez d\'or pour acheter des fournitures.',
+		blackMarketMet: 'Rencontré un marchand du marché noir : Peut obtenir équipement Commun~Épique par pari, max 2 objets.',
+		blackMarketError: '(Erreur système : Interface du marché noir non chargée)',
+		
+		// Dead traveler events
+		foundEquipmentOnBody: '⚔️ Vous avez trouvé',
+		addedToInventoryMsg: '(ajouté à l\'inventaire)',
+		foundGoldAndItem: '💰 Vous avez trouvé',
+		goldCoinsText: 'or et',
+		foundGoldOnly: '💰 Vous avez trouvé',
+		goldCoinsEnd: 'or près du corps.',
+		travelerNothing: '🕊️ Vous avez pleuré le voyageur, mais rien de valeur ne reste.',
+		travelerDecayed: '💨 Le corps et l\'équipement ont été érodés par les tempêtes de sable, inutilisables.',
+		travelerScorpions: '🦂 Il y a des traces de scorpions autour du corps, vous êtes parti prudemment sans rien prendre.',
+		minorInjury: '(Blessure mineure en partant',
+		hpLoss: 'PV)',
+		
+		// Temple events
+		templeFound: '🛕 Vous avez découvert des ruines de temple ancien...',
+		templeBlessingMaxHp: '✨ La bénédiction du temple descend ! PV Max',
+		templeBlessingCombatLuck: '✨ La bénédiction du temple descend ! Chance de Combat',
+		templeBlessingGoldLuck: '✨ La bénédiction du temple descend ! Chance d\'Or',
+		templeTreasure: '💎 Vous avez trouvé un trésor ancien dans le temple ! Obtenu',
+		curseDamage: 'Dégâts de malédiction subis',
+		trapTriggered: '💥 Vous avez déclenché un piège ancien !',
+		trapDamage: 'Le piège a infligé',
+		pointDamage: 'dégâts !',
+		
+		// Caravan rest events
+		caravanRestMet: '🐪 Vous avez rencontré une caravane au repos...',
+		boughtPotions: '🧪 Vous avez acheté 2 potions à la caravane (coût 60 or)',
+		caravanNoGold: 'La caravane est prête à échanger, mais vous n\'avez pas assez d\'or (besoin de 60 or).',
+		caravanGiftGold: '💰 Le chef de caravane vous a donné de l\'or (+',
+		thankYou: ') en remerciement de votre visite.',
+		caravanGiftPotion: '🧪 La caravane vous a donné une potion en geste de bonne volonté.',
+		caravanKnowledge: '📜 La caravane a partagé l\'expérience de survie dans le désert et des renseignements cartographiques.',
+		caravanBandits: '⚔️ Ce sont des bandits déguisés !',
+		
+		// Nomad camp events
+		nomadCampMet: '⛺ Vous avez rencontré un camp de nomades...',
+		nomadHospitality: '🏕️ Les nomades vous ont chaleureusement accueilli, offrant nourriture et repos.',
+		hpRestore: 'PV',
+		staminaRestore: 'Endurance',
+		nomadGiftItem: '🎁 Les nomades vous ont donné',
+		nomadLegends: '📖 Les nomades vous ont raconté des légendes anciennes du désert et des secrets.',
+		gainedExpAndGold: 'Expérience gagnée et',
+		nomadHostile: '⚔️ Cette tribu est hostile aux étrangers !',
+		
+		// Quicksand events
+		quicksandTrapped: '⚠️ Vous êtes tombé dans des sables mouvants !',
+		quicksandEscaped: '💨 Vous avez rapidement échappé à la zone de sables mouvants !',
+		staminaConsumed: 'Endurance consommée',
+		quicksandDeep: '💀 Vous avez coulé profondément dans les sables mouvants, presque suffoqué !',
+		potionBroken: '🧪 Cassé accidentellement une potion en se débattant (-1 potion)',
+		
+		// Scorpion events
+		scorpionNest: '🦂 Vous êtes entré accidentellement dans un nid de scorpions !',
+		scorpionAvoided: '🏃 Vous avez soigneusement évité les scorpions, échappant au danger avec succès !',
+		scorpionStung: '😣 Vous avez été piqué par un scorpion !',
+		poisonDamage: 'Dégâts de poison subis',
+		scorpionSwarm: '💀 Plusieurs scorpions vous ont attaqué !',
+		hpStaminaLoss: 'PV',
+		scorpionTreasure: '✨ En évitant les scorpions, vous avez trouvé leur trésor gardé !',
+		gainedGold: 'Gagné',
+		
+		// Ancient ruins events
+		ruinsFound: '🏛️ Vous avez découvert des ruines anciennes...',
+		foundArtifact: '⚱️ Vous avez trouvé un artefact ancien dans les ruines',
+		ruinsKnowledge: '📜 Vous avez étudié les inscriptions sur les ruines, gagnant des connaissances anciennes.',
+		ruinsTrap: '💥 Vous avez déclenché le mécanisme de défense des ruines !',
+		receivedDamage: 'Reçu',
+		ruinsGuardian: '👹 Le gardien des ruines s\'est réveillé !',
+		
+		// Trading post events
+		tradingPostFound: '🏪 Vous avez trouvé un poste de commerce du désert !',
+		tradingPostDesc: 'Ici vous pouvez vous réapprovisionner et vendre l\'équipement dont vous n\'avez pas besoin.',
+		soldItem: '💰 Vendu',
+		obtainedGold: 'obtenu',
+		boughtPotion: '🧪 Acheté potion x1',
+		boughtFood: '🍖 Acheté nourriture, PV +30, Endurance +15',
+		fullRestore: '💊 Récupération complète ! PV et Endurance complètement restaurés !',
+		notEnoughGoldShop: '❌ Pas assez d\'or !',
+		leftTradingPost: 'Vous avez quitté le poste de commerce et continué votre voyage.',
+		
+		// God events
+		godMet: 'Rencontré une divinité égyptienne ancienne, reçu bénédiction ou malédiction (aléatoire).',
+		godBlessingGold: 'Bénédiction reçue : Or',
+		goldLuckBonus2: '(incluant bonus de Chance d\'Or',
+		goldLuckDecreased: 'Chance d\'Or',
+		godBlessingSimple: 'Bénédiction reçue : Or +50',
+		godCurse: 'Malédiction reçue : PV -15',
+		
+		// Pyramid events
+		pyramidFound: '🔺 Vous avez découvert une pyramide ancienne !',
+		pyramidDanger: 'Remplie de dangers, mais aussi de grands trésors...',
+		pyramidInfo: 'Donjon de pyramide : 8 étapes d\'exploration, ennemis extrêmement puissants (augmente avec la carte), récompenses généreuses (15x exp/or), équipement Bon+ garanti !',
+		declinePyramid: 'Vous avez décidé de ne pas entrer dans la pyramide et avez continué.',
+		enterPyramid: '⚡ Vous êtes entré dans les profondeurs de la pyramide...',
+		pyramidStart: '🔺 Donjon de pyramide commencé ! Vous avez 8 étapes d\'exploration.',
+		exitPyramid: '🌅 Vous êtes sorti de la pyramide et retourné dans le désert.',
+		pyramidComplete: 'Donjon de pyramide terminé ! Exploré',
+		stepCount: 'étapes.',
+		
+		// Slot battle results
+		slotResult: 'Symbole principal :',
+		matchCount: ', Correspondances :',
+		consecutive: ', Consécutif',
+		multiplier: '(Multiplicateur',
+		normalAttack: 'Vous avez lancé une attaque normale',
+		skillAttack: 'Vous avez utilisé une compétence',
+		causingDamage: ', infligeant',
+		defenseGain: 'Vous avez gagné en défense',
+		combo: '(Combo',
+		shieldGain: '), Bouclier',
+		potionUse: 'Utilisé potion rouge',
+		restoreHp: ', PV restaurés',
+		restoreStamina: 'Endurance',
+		luckGain: 'Chance de Combat gagnée',
+		improveRate: ', améliorant les chances de critique et d\'esquive.',
+		dodgedSymbolAttack: 'Vous avez esquivé l\'attaque de symbole ennemi (Chance de Combat',
+		critText: '(Critique)',
+		
+		// Misc
+		strangerMerchant: '🏪 L\'étranger s\'est avéré être un marchand spécial !',
+		bonus: 'bonus'
 	}
 };
 

@@ -1,0 +1,138 @@
+# 批量翻譯鍵 - 待添加到 i18n.js
+
+## 裝備系統
+gainedExp: 獲得經驗值
+equipTo: 裝備 {item} 到 {slot}
+gainedGoldLuck: 獲得金幣幸運
+maxHpBonus: 最大生命
+maxStaminaBonus: 最大體力
+cannotEquip: 此物品無法裝備。
+noEquipmentInSlot: 此欄位沒有裝備。
+goldLuckRemaining: 金幣幸運 -{value}（剩餘 {remaining}）
+
+## 地圖進度
+desertCleared: 成功走出沙漠，進入下一張地圖，難度提升！
+nothingHappened: 什麼都沒發生。
+
+## 戰鬥系統
+encounterEnemy: 遭遇 {type}，進入插槽戰鬥！
+encounterEnemyName: 遭遇敵人：{name}
+pyramidEnemyStrong: ⚠️ 金字塔敵人實力強大！血量x{hp}、攻擊x{atk}、強度x{str}
+notInBattle: 目前不在戰鬥中。
+fleeSuccess: 你成功逃離戰鬥！
+fleeFailed: 逃跑失敗！敵人獲得一次攻擊機會！
+dodgedAttack: 你閃避了敵人的自動普攻！(戰鬥幸運 {luck})
+enemyAutoAttack: 敵人自動普攻，造成 {dmg} 傷害（護盾吸收 {shield}），玩家 HP -{final}。
+
+## 商隊事件
+caravanMet: 遇到商隊：若資金足夠可補給藥水（50金/瓶）。
+supplySuccess: 補給成功，藥水+1
+supplyNoGold: 金幣不足，無法購買補給。
+blackMarketMet: 遇到黑市商人：能在黑市中獲得普通到史詩級裝備，此為賭博交易，最多購買兩件。
+blackMarketError: （系統錯誤：黑市介面未載入）
+
+## 罹難旅人事件
+foundEquipmentOnBody: ⚔️ 你在遺體旁找到了 {item}！
+addedToInventoryMsg: （已加入背包）
+foundGoldAndItem: 💰 你找到了 {gold} 金幣和 {item}！
+foundGoldOnly: 💰 你在遺體旁找到了 {gold} 金幣。
+travelerNothing: 🕊️ 你為旅人默哀，但身上已經沒有任何有價值的東西了。
+travelerDecayed: 💨 遺體和裝備都已被風沙侵蝕，無法使用。
+travelerScorpions: 🦂 遺體周圍有毒蠍的痕跡，你謹慎地離開了，什麼也沒拿。
+minorInjury: （小心離開時受到輕傷 -{dmg} HP）
+
+## 神殿事件
+templeFound: 🛕 你發現了一座古老的神殿廢墟...
+templeBlessingMaxHp: ✨ 神殿的祝福降臨！最大HP +{value}
+templeBlessingCombatLuck: ✨ 神殿的祝福降臨！戰鬥幸運 +{value}
+templeBlessingGoldLuck: ✨ 神殿的祝福降臨！金幣幸運 +{value}
+templeTreasure: 💎 你在神殿中找到了古老的寶藏！獲得 {gold} 金幣。
+curseDamage: 受到詛咒傷害 -{dmg} HP
+trapTriggered: 💥 你觸發了古老的陷阱！
+trapDamage: 陷阱造成 {dmg} 點傷害！
+
+## 商隊休息事件
+caravanRestMet: 🐪 你遇到了一支商隊正在休息...
+boughtPotions: 🧪 你向商隊購買了2瓶藥水（花費60金幣）
+caravanNoGold: 商隊願意交易，但你的金幣不足（需要60金幣）。
+caravanGiftGold: 💰 商隊隊長贈送你一些金幣（+{value}）以答謝你的到來。
+caravanGiftPotion: 🧪 商隊贈送你一瓶藥水以表善意。
+caravanKnowledge: 📜 商隊分享了沙漠中的生存經驗和地圖情報。
+caravanBandits: ⚔️ 這是一群偽裝的盜賊！
+
+## 遊牧民族事件
+nomadCampMet: ⛺ 你遇到了一個遊牧民族的營地...
+nomadHospitality: 🏕️ 遊牧民熱情地接待了你，提供食物和休息。
+hpStaminaRestore: HP +40，體力 +25
+nomadGiftItem: 🎁 遊牧民贈送你一件 {item}（已加入背包）
+nomadLegends: 📖 遊牧民告訴你關於沙漠的古老傳說和秘密。
+gainedExpAndGold: 獲得經驗值和 {gold} 金幣。
+nomadHostile: ⚔️ 這個部落對外來者不友善！
+
+## 流沙事件
+quicksandTrapped: ⚠️ 你踩到了流沙！
+quicksandEscaped: 💨 你迅速脫離了流沙區域！
+staminaConsumed: 消耗體力 -{value}
+quicksandDeep: 💀 你陷入流沙深處，幾乎要窒息！
+potionBroken: 🧪 在掙扎中不小心打破了一瓶藥水（-1藥水）
+
+## 毒蠍事件
+scorpionNest: 🦂 你無意中闖入了毒蠍的巢穴！
+scorpionAvoided: 🏃 你小心地繞過毒蠍，成功避開了危險！
+scorpionStung: 😣 你被毒蠍蜇了一下！
+poisonDamage: 受到毒素傷害 -{dmg} HP
+scorpionSwarm: 💀 多隻毒蠍攻擊了你！
+hpStaminaLoss: HP -{hp}，體力 -{stamina}
+scorpionTreasure: ✨ 在躲避毒蠍時，你發現了牠們守護的寶藏！
+gainedGold: 獲得 {gold} 金幣！
+
+## 古代遺跡事件
+ruinsFound: 🏛️ 你發現了一處古代遺跡...
+foundArtifact: ⚱️ 你在遺跡中找到了古代神器 {item}！
+ruinsKnowledge: 📜 你研究了遺跡上的銘文，獲得了古老的知識。
+ruinsTrap: 💥 你觸發了遺跡的守護機關！
+receivedDamage: 受到 {dmg} 點傷害！
+ruinsGuardian: 👹 遺跡的守護者被喚醒了！
+
+## 驛站事件
+tradingPostFound: 🏪 你發現了一個沙漠驛站！
+tradingPostDesc: 這裡可以補給物資，也可以出售你不需要的裝備。
+soldItem: 💰 賣出 {item}，獲得 {gold} 金幣。
+boughtPotion: 🧪 購買藥水 x1
+boughtFood: 🍖 購買食物，HP +30，體力 +15
+fullRestore: 💊 完全恢復！HP和體力全滿！
+notEnoughGoldShop: ❌ 金幣不足！
+leftTradingPost: 你離開了驛站，繼續踏上旅程。
+
+## 神祇事件
+godMet: 遇到古埃及神祇，獲得祝福或詛咒（隨機）。
+godBlessingGold: 獲得祝福：金幣 +{gold}（含金幣幸運加成 x{luck}）。
+goldLuckDecreased: 金幣幸運 -1（剩餘 {remaining}）。
+godBlessingSimple: 獲得祝福：金幣 +50
+godCurse: 受到詛咒：HP -15
+
+## 金字塔事件
+pyramidFound: 🔺 你發現了一座古老的金字塔！
+pyramidDanger: 這裡充滿危險，但也蘊藏著巨大的寶藏...
+pyramidInfo: 金字塔副本：8步探險，敵人強度極高（隨地圖提升），獎勵豐厚（15倍經驗/金幣），保證掉落優良以上裝備！
+declinePyramid: 你決定不進入金字塔，繼續前行。
+enterPyramid: ⚡ 你踏入了金字塔深處...
+pyramidStart: 🔺 金字塔副本開始！你有 8 步探險機會。
+exitPyramid: 🌅 你走出了金字塔，回到了沙漠中。
+pyramidComplete: 金字塔副本完成！探索了 {current}/{max} 步。
+
+## 戰鬥結果訊息
+slotResult: 主要符號：{symbol}，匹配數：{count}{bonus}，連續 x{combo}（乘數 x{multiplier}）
+normalAttack: 你發動普通攻擊 x{count}{crit}，對敵人造成 {dmg} 傷害。
+skillAttack: 你使用技能 x{count}{crit}，對敵人造成 {dmg} 傷害，消耗體力 {stamina}。
+defenseGain: 你獲得防禦 x{count}（連擊 x{combo}），護盾 +{shield}。
+potionUse: 使用紅色水瓶 x{count}（連擊 x{combo}），回復 HP {hp}、體力 {stamina}。
+luckGain: 獲得戰鬥幸運 +{value}，提高暴擊與閃避機率。
+dodgedSymbolAttack: 你閃避了敵人符號攻擊（戰鬥幸運 {luck}）！
+critText: （暴擊）
+
+## 其他
+strangerMerchant: 🏪 陌生人原來是個特殊商人！
+to: 到
+remaining: 剩餘
+bonus: 加成
