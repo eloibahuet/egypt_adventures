@@ -741,22 +741,6 @@ body::after {
     z-index: 10;
 }
 
-/* 象形文字標題裝飾 - 超清晰版 */
-#sidebar::before {
-    content: '𓂧 𓏏 𓇋 𓄣 𓅪';
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, transparent 0%, #f0e5d0 15%, #f0e5d0 85%, transparent 100%);
-    padding: 2px 20px;
-    color: #b8860b;
-    font-size: 22px;
-    font-weight: bold;
-    letter-spacing: 10px;
-    text-shadow: 0 3px 6px rgba(101, 67, 33, 0.5), 0 0 10px rgba(218, 165, 32, 0.3);
-    z-index: 9;
-}
 #sidebar h2 { 
     margin-top: 0; 
     margin-bottom: 8px;

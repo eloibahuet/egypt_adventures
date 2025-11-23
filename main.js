@@ -305,11 +305,8 @@ function genEnemyName(type) {
 			return setBonus.effects[attrName] || 0;
 		}
 
-		// 顯示/更新裝備面板（簡易介面），可選 filterSlot: 'weapon'|'armor'|'amulet' 或 null
-		showEquipmentPanel(filterSlot = null) {
-			// Helper: 格式化物品屬性顯示
-			// 例：青銅劍 (攻+3)
-			this.formatItem = function(it){
+		// Helper: 格式化物品屬性顯示
+		formatItem(it) {
 				if (!it) return '';
 				const parts = [];
 				if (it.atk) parts.push(`攻+${it.atk}`);
@@ -335,7 +332,10 @@ function genEnemyName(type) {
 				}
 				
 				return `<span style="color: ${color}; font-weight: bold;">${displayName}</span>${attr}`;
-			};
+		}
+
+		// 顯示/更新裝備面板（簡易介面），可選 filterSlot: 'weapon'|'armor'|'amulet' 或 null
+		showEquipmentPanel(filterSlot = null) {
 			const panel = document.getElementById('equipment-panel');
 			const content = document.getElementById('equip-content');
 			if (!panel || !content) return;
@@ -1859,29 +1859,45 @@ function genEnemyName(type) {
 					if (this.enemy.hp <= 0) {
 						showMessage('你擊敗了敵人！戰鬥結束，獲得獎勵。');
 						
-						// 定義 cloneItem 函數來正確處理裝備屬性加成
-						const cloneItem = (base, rarity) => {
-							const it = Object.assign({}, base);
-							it.rarity = rarity;
-							// 調整屬性幅度：rare +~1.5, epic +~2.2
-							if (it.atk) it.atk = Math.max(1, Math.round(it.atk * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-							if (it.def) it.def = Math.max(1, Math.round(it.def * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-							if (it.luck_gold) it.luck_gold = Math.max(1, Math.round(it.luck_gold * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-							if (it.luck_combat) it.luck_combat = Math.max(1, Math.round(it.luck_combat * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-							if (it.max_hp_bonus) it.max_hp_bonus = Math.max(1, Math.round(it.max_hp_bonus * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-							
-							// 根據品質添加額外屬性
-							if (rarity !== 'common' && QUALITY_BONUS[it.slot] && QUALITY_BONUS[it.slot][rarity]) {
-								const bonusPool = QUALITY_BONUS[it.slot][rarity];
-								if (bonusPool.length > 0) {
-									const bonus = bonusPool[Math.floor(Math.random() * bonusPool.length)];
-									Object.assign(it, bonus);
+					// 定義 cloneItem 函數來正確處理裝備屬性加成
+					const cloneItem = (base, rarity, isPyramid = false) => {
+						const it = Object.assign({}, base);
+						it.rarity = rarity;
+						// 調整屬性幅度：rare +~1.5, epic +~2.2
+						if (it.atk) it.atk = Math.max(1, Math.round(it.atk * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						if (it.def) it.def = Math.max(1, Math.round(it.def * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						if (it.luck_gold) it.luck_gold = Math.max(1, Math.round(it.luck_gold * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						if (it.luck_combat) it.luck_combat = Math.max(1, Math.round(it.luck_combat * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						if (it.max_hp_bonus) it.max_hp_bonus = Math.max(1, Math.round(it.max_hp_bonus * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						
+						// 根據品質添加額外屬性
+						if (rarity !== 'common' && QUALITY_BONUS[it.slot] && QUALITY_BONUS[it.slot][rarity]) {
+							const bonusPool = QUALITY_BONUS[it.slot][rarity];
+							if (bonusPool.length > 0) {
+								const bonus = bonusPool[Math.floor(Math.random() * bonusPool.length)];
+								Object.assign(it, bonus);
+							}
+						}
+						
+						// 金字塔裝備添加字綴
+						if (isPyramid && rarity !== 'common') {
+							const affix = PYRAMID_AFFIXES[Math.floor(Math.random() * PYRAMID_AFFIXES.length)];
+							it.affix = affix.id;
+							it.affixName = affix.name;
+							it.affixColor = affix.color;
+							// 添加字綴屬性加成
+							for (const key in affix.bonus) {
+								if (it[key]) {
+									it[key] += affix.bonus[key];
+								} else {
+									it[key] = affix.bonus[key];
 								}
 							}
-							return it;
-						};
+							it.isPyramid = true;
+						}
 						
-						// 金字塔副本獎勵倍率（改為15倍）
+						return it;
+					};						// 金字塔副本獎勵倍率（改為15倍）
 						const pyramidMultiplier = this.inPyramid ? 15 : 1;
 						
 						// 敵人類型獎勵倍率（精英x2，小頭目x3）
