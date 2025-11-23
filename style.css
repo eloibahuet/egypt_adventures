@@ -276,20 +276,76 @@ body::after {
     #roulette { width: 220px; height: 220px; }
 }
 
-/* Slot machine styles */
+/* Slot machine styles - 金色格紋外框 */
 #slot-machine {
     display: flex;
     gap: 8px;
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 0;
+    padding: 50px 60px;
     z-index: 5;
     margin: 0;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 20px,
+            rgba(212, 175, 55, 0.2) 20px,
+            rgba(212, 175, 55, 0.2) 22px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 20px,
+            rgba(212, 175, 55, 0.2) 20px,
+            rgba(212, 175, 55, 0.2) 22px
+        ),
+        linear-gradient(180deg, #fffef8 0%, #fffbf0 100%);
+    border: 4px solid #d4af37;
+    border-radius: 12px;
+    box-shadow: 
+        0 0 0 2px #c9941a,
+        inset 0 2px 0 rgba(255, 255, 255, 0.5),
+        0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* 頂部象形文字 */
+#slot-machine::before {
+    content: '𓆣 𓇋 𓂀 𓁹 𓂧 𓏏 𓄣 𓅪';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #b8860b;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 18px;
+    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+/* 底部象形文字 */
+#slot-machine::after {
+    content: '𓅪 𓄣 𓏏 𓂧 𓁹 𓂀 𓇋 𓆣';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #b8860b;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 18px;
+    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
 }
 
 /* 左側垂直象形文字 */
-#slot-machine::before {
+.reel:first-child::before {
     content: '𓆣\A𓇋\A𓂀\A𓁹\A𓂧\A𓏏';
     position: absolute;
     left: -45px;
@@ -306,7 +362,7 @@ body::after {
 }
 
 /* 右側垂直象形文字 */
-#slot-machine::after {
+.reel:last-child::after {
     content: '𓏏\A𓂧\A𓁹\A𓂀\A𓇋\A𓆣';
     position: absolute;
     right: -45px;
@@ -495,63 +551,6 @@ body::after {
     gap: 12px;
     flex: 1 1 auto;
     position: relative;
-    padding: 50px 60px;
-    background: 
-        repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 20px,
-            rgba(212, 175, 55, 0.2) 20px,
-            rgba(212, 175, 55, 0.2) 22px
-        ),
-        repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 20px,
-            rgba(212, 175, 55, 0.2) 20px,
-            rgba(212, 175, 55, 0.2) 22px
-        ),
-        linear-gradient(180deg, #fffef8 0%, #fffbf0 100%);
-    border: 4px solid #d4af37;
-    border-radius: 12px;
-    box-shadow: 
-        0 0 0 2px #c9941a,
-        inset 0 2px 0 rgba(255, 255, 255, 0.5),
-        0 4px 12px rgba(212, 175, 55, 0.3);
-}
-
-/* 頂部象形文字 */
-#slot-center::before {
-    content: '𓆣 𓇋 𓂀 𓁹 𓂧 𓏏 𓄣 𓅪';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #b8860b;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 18px;
-    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
-    pointer-events: none;
-    z-index: 10;
-    white-space: nowrap;
-}
-
-/* 底部象形文字 */
-#slot-center::after {
-    content: '𓅪 𓄣 𓏏 𓂧 𓁹 𓂀 𓇋 𓆣';
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #b8860b;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 18px;
-    text-shadow: 0 2px 4px rgba(101, 67, 33, 0.5), 0 0 8px rgba(218, 165, 32, 0.3);
-    pointer-events: none;
-    z-index: 10;
-    white-space: nowrap;
 }
 
 .status-box-side {
