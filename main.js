@@ -298,40 +298,56 @@ function genEnemyName(type) {
 			});
 		}
 
-		equipItem(index) {
-			const it = this.player.inventory[index];
-			if (!it) return;
-			if (it.slot && this.player.equipment.hasOwnProperty(it.slot)) {
-				this.player.equipment[it.slot] = it;
-				showMessage(`裝備 ${it.name} 到 ${it.slot}`);
-				// 若是護符給予立即效果（例如 luck_gold）
-				if (it.luck_gold) {
-					this.player.luck_gold += it.luck_gold;
-					showMessage(`獲得金幣幸運 +${it.luck_gold}`);
-				}
-				// 從背包中移除（簡單處理）
-				this.player.inventory.splice(index,1);
-				this.updateStatus();
-			} else {
-				showMessage('此物品無法裝備。');
-			}
-		}
-
-		unequipItem(slot) {
-			if (!this.player.equipment || !this.player.equipment[slot]) { showMessage('此欄位沒有裝備。'); return; }
-			const it = this.player.equipment[slot];
-			this.player.inventory.push(it);
-			this.player.equipment[slot] = null;
-			showMessage(`卸下 ${it.name}，已放入背包。`);
-			// 如果是護符，移除其 luck_gold 效果（若有）
+	equipItem(index) {
+		const it = this.player.inventory[index];
+		if (!it) return;
+		if (it.slot && this.player.equipment.hasOwnProperty(it.slot)) {
+			this.player.equipment[it.slot] = it;
+			showMessage(`裝備 ${it.name} 到 ${it.slot}`);
+			// 應用裝備屬性加成
 			if (it.luck_gold) {
-				this.player.luck_gold = Math.max(0, this.player.luck_gold - (it.luck_gold||0));
-				showMessage(`金幣幸運 -${it.luck_gold}（剩餘 ${this.player.luck_gold}）。`);
+				this.player.luck_gold += it.luck_gold;
+				showMessage(`獲得金幣幸運 +${it.luck_gold}`);
 			}
+			if (it.max_hp_bonus) {
+				this.player.max_hp += it.max_hp_bonus;
+				this.player.hp = Math.min(this.player.max_hp, this.player.hp + it.max_hp_bonus);
+				showMessage(`最大生命 +${it.max_hp_bonus}`);
+			}
+			if (it.stamina_bonus) {
+				this.player.max_stamina += it.stamina_bonus;
+				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + it.stamina_bonus);
+				showMessage(`最大體力 +${it.stamina_bonus}`);
+			}
+			// 從背包中移除（簡單處理）
+			this.player.inventory.splice(index,1);
 			this.updateStatus();
+		} else {
+			showMessage('此物品無法裝備。');
 		}
-
-		updateStatus() {
+	}		unequipItem(slot) {
+			if (!this.player.equipment || !this.player.equipment[slot]) { showMessage('此欄位沒有裝備。'); return; }
+		const it = this.player.equipment[slot];
+		this.player.inventory.push(it);
+		this.player.equipment[slot] = null;
+		showMessage(`卸下 ${it.name}，已放入背包。`);
+		// 移除裝備屬性加成
+		if (it.luck_gold) {
+			this.player.luck_gold = Math.max(0, this.player.luck_gold - (it.luck_gold||0));
+			showMessage(`金幣幸運 -${it.luck_gold}（剩餘 ${this.player.luck_gold}）。`);
+		}
+		if (it.max_hp_bonus) {
+			this.player.max_hp = Math.max(1, this.player.max_hp - it.max_hp_bonus);
+			this.player.hp = Math.min(this.player.max_hp, this.player.hp);
+			showMessage(`最大生命 -${it.max_hp_bonus}`);
+		}
+		if (it.stamina_bonus) {
+			this.player.max_stamina = Math.max(1, this.player.max_stamina - it.stamina_bonus);
+			this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina);
+			showMessage(`最大體力 -${it.stamina_bonus}`);
+		}
+		this.updateStatus();
+	}		updateStatus() {
 			// 更新玩家狀態到左側面板
 			const playerStatusEl = document.getElementById('player-status');
 			const enemyStatusEl = document.getElementById('enemy-status');
@@ -543,8 +559,9 @@ function genEnemyName(type) {
 			// 若玩家連續相同符號次數較多，敵人會略微提升回擊（風險），但幅度較小
 			const extra = Math.max(0, this.consecutivePrimaryCount - 1) * 0.12; // 每連擊加12%回擊
 			let dmg = Math.floor(raw * (1 + extra));
-			// 玩家有閃避機會（由幸運值提供被動閃避）
-			const dodgeChance = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat); // 最多 50% 閃避
+			// 玩家有閃避機會（由幸運值和護甲提供被動閃避）
+			const armorDodge = this.player.equipment.armor ? (this.player.equipment.armor.dodge_rate || 0) : 0;
+			const dodgeChance = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodge / 100); // 最多 50% 閃避
 			if (Math.random() < dodgeChance) {
 				showMessage(`你閃避了敵人的自動普攻！(戰鬥幸運 ${this.player.luck_combat})`);
 			} else {
@@ -832,7 +849,9 @@ function genEnemyName(type) {
 					baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
 					const weaponAtk = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
 					baseDmg += weaponAtk;
-					const critChance = Math.min(0.5, 0.05 + 0.03 * this.player.luck_combat); // 上限 50%
+					// 應用武器的暴擊率加成
+					const weaponCritRate = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
+					const critChance = Math.min(0.5, 0.05 + 0.03 * this.player.luck_combat + weaponCritRate / 100); // 上限 50%
 					let isCrit = Math.random() < critChance;
 					let finalDmg = isCrit ? Math.floor(baseDmg * 1.5) : baseDmg;
 					this.enemy.hp -= finalDmg;
@@ -845,7 +864,12 @@ function genEnemyName(type) {
 					baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
 					const weaponAtk2 = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
 					baseDmg += weaponAtk2;
-					const critChance2 = Math.min(0.5, 0.04 + 0.03 * this.player.luck_combat); // 技能略低基礎暴擊
+					// 應用武器的技能威力加成
+					const weaponSkillPower = this.player.equipment.weapon ? (this.player.equipment.weapon.skill_power || 0) : 0;
+					baseDmg = Math.floor(baseDmg * (1 + weaponSkillPower / 100));
+					// 應用武器的暴擊率加成
+					const weaponCritRate2 = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
+					const critChance2 = Math.min(0.5, 0.04 + 0.03 * this.player.luck_combat + weaponCritRate2 / 100); // 技能略低基礎暴擊
 					let isCrit2 = Math.random() < critChance2;
 					let finalDmg2 = isCrit2 ? Math.floor(baseDmg * 1.6) : baseDmg;
 					this.enemy.hp -= finalDmg2;
@@ -877,8 +901,9 @@ function genEnemyName(type) {
 				case '💀': {
 					// 降低符號造成的直接傷害以利入門玩家
 					const rawDmg = 10 * matchCount; // 調整為每格 10 傷害
-					// 玩家有閃避機率（受幸運影響）
-					const dodgeChanceSkull = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat);
+					// 玩家有閃避機率（受幸運和護甲影響）
+					const armorDodgeSkull = this.player.equipment.armor ? (this.player.equipment.armor.dodge_rate || 0) : 0;
+					const dodgeChanceSkull = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodgeSkull / 100);
 					if (Math.random() < dodgeChanceSkull) {
 						showMessage(`你閃避了敵人符號攻擊（戰鬥幸運 ${this.player.luck_combat}）！`);
 					} else {
