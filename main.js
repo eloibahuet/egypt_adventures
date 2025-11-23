@@ -2038,7 +2038,7 @@ function genEnemyName(type) {
 			const comboMultiplier = effectiveCombo;
 			// 簡短提示主要符號、匹配數與當前 combo
 			const bonusMsg = matchCount === 3 ? '【三連加成 x2.5】' : '';
-			showMessage(`主要符號：${primary}，匹配數：${matchCount}${bonusMsg}，連續 x${effectiveCombo}（乘數 x${comboMultiplier.toFixed(2)}）`);
+			showMessage(`主要符號：${primary}，匹配數：${matchCount}${bonusMsg}，連續 x${effectiveCombo}（乘數 x${comboMultiplier}）`);
 
 			switch (primary) {
 				case '⚔️': {
