@@ -1200,13 +1200,15 @@ function genEnemyName(type) {
 			this.updateStatus();
 		}
 
-		oasis() {
-			showMessage(t('oasisFound'));
-			this.player.hp = Math.min(this.player.max_hp, this.player.hp + 20);
-			this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 10);
-		}
-
-	sandstorm() {
+	oasis() {
+		const mapMultiplier = Math.pow(2, this.difficulty - 1);
+		const hpGain = Math.floor(20 * mapMultiplier);
+		const staminaGain = Math.floor(10 * mapMultiplier);
+		showMessage(t('oasisFound'));
+		this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
+		this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
+		showMessage(`HP +${hpGain}，體力 +${staminaGain}`);
+	}	sandstorm() {
 		showMessage(t('sandstormEncounter'));
 		this.player.hp = Math.max(0, this.player.hp - 10);
 		showMessage(`${t('sandstormDamage')} -10。`);
@@ -1345,20 +1347,25 @@ function genEnemyName(type) {
 			];
 			const blessing = blessings[Math.floor(Math.random() * blessings.length)];
 			
+			const mapMultiplier = Math.pow(2, this.difficulty - 1);
 			if (blessing.type === 'hp') {
-				this.player.max_hp += blessing.value;
-				this.player.hp = Math.min(this.player.max_hp, this.player.hp + blessing.value);
-				showMessage(`✨ 神殿的祝福降臨！最大HP +${blessing.value}`);
+				const hpValue = Math.floor(blessing.value * mapMultiplier);
+				this.player.max_hp += hpValue;
+				this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpValue);
+				showMessage(`✨ 神殿的祝福降臨！最大HP +${hpValue}`);
 			} else if (blessing.type === 'stamina') {
-				this.player.max_stamina += blessing.value;
-				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + blessing.value);
-				showMessage(`${t('shrineBlessing')} +${blessing.value}`);
+				const staminaValue = Math.floor(blessing.value * mapMultiplier);
+				this.player.max_stamina += staminaValue;
+				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaValue);
+				showMessage(`${t('shrineBlessing')} +${staminaValue}`);
 			} else if (blessing.type === 'luck_combat') {
-				this.player.luck_combat += blessing.value;
-				showMessage(`✨ 神殿的祝福降臨！戰鬥幸運 +${blessing.value}`);
+				const luckValue = Math.floor(blessing.value * mapMultiplier);
+				this.player.luck_combat += luckValue;
+				showMessage(`✨ 神殿的祝福降臨！戰鬥幸運 +${luckValue}`);
 			} else if (blessing.type === 'luck_gold') {
-				this.player.luck_gold += blessing.value;
-				showMessage(`✨ 神殿的祝福降臨！金幣幸運 +${blessing.value}`);
+				const luckValue = Math.floor(blessing.value * mapMultiplier);
+				this.player.luck_gold += luckValue;
+				showMessage(`✨ 神殿的祝福降臨！金幣幸運 +${luckValue}`);
 			}
 		} else if (result.type === 'treasure') {
 			const gold = 100 + Math.floor(Math.random() * 200);
@@ -1429,14 +1436,18 @@ function genEnemyName(type) {
 				this.player.potions += gift.value;
 				showMessage('🧪 商隊贈送你一瓶藥水以表善意。');
 			} else if (gift.type === 'food') {
-				this.player.hp = Math.min(this.player.max_hp, this.player.hp + gift.hp);
-				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + gift.stamina);
-				showMessage(`${t('caravanGift')} +${gift.hp}, ${t('stamina')} +${gift.stamina}`);
+				const mapMultiplier = Math.pow(2, this.difficulty - 1);
+				const hpGain = Math.floor(gift.hp * mapMultiplier);
+				const staminaGain = Math.floor(gift.stamina * mapMultiplier);
+				this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
+				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
+				showMessage(`${t('caravanGift')} HP +${hpGain}, ${t('stamina')} +${staminaGain}`);
 			}
 		} else if (result.type === 'info') {
-			const xp = 20 + Math.floor(Math.random() * 30);
+			const mapMultiplier = Math.pow(2, this.difficulty - 1); // 第1章x1, 第2章x2, 第3章x4...
+			const xp = Math.floor((20 + Math.floor(Math.random() * 30)) * mapMultiplier);
 			this.addXP(xp);
-			showMessage('📜 商隊分享了沙漠中的生存經驗和地圖情報。');
+			showMessage(`📜 商隊分享了沙漠中的生存經驗和地圖情報。獲得 ${xp} 經驗值。`);
 		} else {
 			showMessage('⚔️ 這是一群偽裝的盜賊！');
 			this.battle('monster');
@@ -1501,22 +1512,26 @@ function genEnemyName(type) {
 		}
 
 		if (result.type === 'healing') {
+			const mapMultiplier = Math.pow(2, this.difficulty - 1);
+			const hpGain = Math.floor(40 * mapMultiplier);
+			const staminaGain = Math.floor(25 * mapMultiplier);
 			showMessage('🏕️ 遊牧民熱情地接待了你，提供食物和休息。');
-			this.player.hp = Math.min(this.player.max_hp, this.player.hp + 40);
-			this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 25);
-			showMessage('HP +40，體力 +25');
+			this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
+			this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
+			showMessage(`HP +${hpGain}，體力 +${staminaGain}`);
 		} else if (result.type === 'trade_items') {
 			const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 			const newItem = Object.assign({}, item, { rarity: 'common' });
 			this.player.inventory.push(newItem);
 			showMessage(`🎁 遊牧民贈送你一件 ${newItem.name}（已加入背包）`);
 		} else if (result.type === 'quest') {
-			const xp = 30 + Math.floor(Math.random() * 40);
+			const mapMultiplier = Math.pow(2, this.difficulty - 1);
+			const xp = Math.floor((30 + Math.floor(Math.random() * 40)) * mapMultiplier);
 			const gold = 40 + Math.floor(Math.random() * 60);
 			this.addXP(xp);
 			this.player.gold += gold;
 			showMessage('📖 遊牧民告訴你關於沙漠的古老傳說和秘密。');
-			showMessage(`獲得經驗值和 ${gold} 金幣。`);
+			showMessage(`獲得 ${xp} 經驗值和 ${gold} 金幣。`);
 		} else {
 			showMessage('⚔️ 這個部落對外來者不友善！');
 			this.battle('monster');
@@ -1626,9 +1641,10 @@ function genEnemyName(type) {
 			this.player.inventory.push(newItem);
 			showMessage(`⚱️ 你在遺跡中找到了古代神器 ${this.formatItem(newItem)}！`);
 		} else if (result.type === 'inscription') {
-			const xp = 40 + Math.floor(Math.random() * 60);
+			const mapMultiplier = Math.pow(2, this.difficulty - 1);
+			const xp = Math.floor((40 + Math.floor(Math.random() * 60)) * mapMultiplier);
 			this.addXP(xp);
-			showMessage('📜 你研究了遺跡上的銘文，獲得了古老的知識。');
+			showMessage(`📜 你研究了遺跡上的銘文，獲得了古老的知識。經驗值 +${xp}`);
 		} else if (result.type === 'trap') {
 			showMessage('💥 你觸發了遺跡的守護機關！');
 			const damage = 15 + Math.floor(Math.random() * 25);
@@ -1687,6 +1703,7 @@ function genEnemyName(type) {
 				showMessage(`${t('strangerGiftItem')} ${this.formatItem(newItem)} ${t('strangerSmoke')}`);
 			}
 		} else if (result.type === 'prophecy') {
+			const mapMultiplier = Math.pow(2, this.difficulty - 1);
 			showMessage(t('strangerProphecy'));
 			const prophecies = [
 				{ text: t('prophecyCombat'), buff: 'combat' },
@@ -1697,14 +1714,17 @@ function genEnemyName(type) {
 			showMessage(prophecy.text);
 			
 			if (prophecy.buff === 'combat') {
-				this.player.luck_combat += 3;
-				showMessage(`${t('combatLuck')} +3`);
+				const luckValue = Math.floor(3 * mapMultiplier);
+				this.player.luck_combat += luckValue;
+				showMessage(`${t('combatLuck')} +${luckValue}`);
 			} else if (prophecy.buff === 'gold') {
-				this.player.luck_gold += 3;
-				showMessage(`${t('goldLuck')} +3`);
+				const luckValue = Math.floor(3 * mapMultiplier);
+				this.player.luck_gold += luckValue;
+				showMessage(`${t('goldLuck')} +${luckValue}`);
 			} else if (prophecy.buff === 'defense') {
-				this.player.shield += 30;
-				showMessage(t('gainShield'));
+				const shieldValue = Math.floor(30 * mapMultiplier);
+				this.player.shield += shieldValue;
+				showMessage(`${t('gainShield')} +${shieldValue}`);
 			}
 		} else if (result.type === 'curse') {
 			showMessage(t('strangerCurse'));
@@ -1862,9 +1882,12 @@ function genEnemyName(type) {
 						this.player.potions += 1;
 						showMessage('🧪 購買藥水 x1');
 					} else if (item === 'food') {
-						this.player.hp = Math.min(this.player.max_hp, this.player.hp + 30);
-						this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 15);
-						showMessage('🍖 購買食物，HP +30，體力 +15');
+						const mapMultiplier = Math.pow(2, this.difficulty - 1);
+						const hpGain = Math.floor(30 * mapMultiplier);
+						const staminaGain = Math.floor(15 * mapMultiplier);
+						this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
+						this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
+						showMessage(`🍖 購買食物，HP +${hpGain}，體力 +${staminaGain}`);
 					} else if (item === 'fullheal') {
 						this.player.hp = this.player.max_hp;
 						this.player.stamina = this.player.max_stamina;
@@ -2243,8 +2266,9 @@ function genEnemyName(type) {
 						rewardMsg += ` (基礎 ${baseReward} x${enemyTypeMultiplier})`;
 					}
 					showMessage(rewardMsg);						// 經驗值以難度與敵人強度計算
+					const mapMultiplier = Math.pow(2, this.difficulty - 1); // 第1章x1, 第2章x2, 第3章x4...
 					const baseXP = Math.floor(15 * this.difficulty * (this.enemy.strength || 1));
-					const xpGain = baseXP * pyramidMultiplier * enemyTypeMultiplier;
+					const xpGain = Math.floor(baseXP * mapMultiplier * pyramidMultiplier * enemyTypeMultiplier);
 					if (this.inPyramid) {
 						showMessage(`🔺 金字塔經驗值 x${pyramidMultiplier}！`);
 					}
