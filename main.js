@@ -409,28 +409,30 @@ function genEnemyName(type) {
 			if (shown === 0) html += `<div>${t('noMatchingItems')}</div>`;
 			content.innerHTML = html;
 			panel.style.display = 'block';
-			// 連結裝備按鈕
-			Array.from(content.querySelectorAll('.equip-now')).forEach(b=>{
-				b.addEventListener('click', (e)=>{
-					const idx = parseInt(e.target.getAttribute('data-idx'));
-					this.equipItem(idx);
-					this.showEquipmentPanel(filterSlot);
+			// 連結裝備按鈕 - 使用觸控友善的事件處理
+			setTimeout(() => {
+				Array.from(content.querySelectorAll('.equip-now')).forEach(b=>{
+					addTouchClickEvent(b, ()=>{
+						const idx = parseInt(b.getAttribute('data-idx'));
+						this.equipItem(idx);
+						this.showEquipmentPanel(filterSlot);
+					});
 				});
-			});
-			// 內嵌卸下/裝備按鈕（在面板內）
-			Array.from(content.querySelectorAll('.unequip-inline')).forEach(b=>{
-				b.addEventListener('click', (e)=>{
-					const slot = e.target.getAttribute('data-slot');
-					this.unequipItem(slot);
-					this.showEquipmentPanel(filterSlot);
+				// 內嵌卸下/裝備按鈕（在面板內）
+				Array.from(content.querySelectorAll('.unequip-inline')).forEach(b=>{
+					addTouchClickEvent(b, ()=>{
+						const slot = b.getAttribute('data-slot');
+						this.unequipItem(slot);
+						this.showEquipmentPanel(filterSlot);
+					});
 				});
-			});
-			Array.from(content.querySelectorAll('.open-equip-inline')).forEach(b=>{
-				b.addEventListener('click', (e)=>{
-					const slot = e.target.getAttribute('data-slot');
-					this.showEquipmentPanel(slot);
+				Array.from(content.querySelectorAll('.open-equip-inline')).forEach(b=>{
+					addTouchClickEvent(b, ()=>{
+						const slot = b.getAttribute('data-slot');
+						this.showEquipmentPanel(slot);
+					});
 				});
-			});
+			}, 50);
 		}
 
 	equipItem(index) {
@@ -593,10 +595,20 @@ function genEnemyName(type) {
 				if (summary) {
 					summary.textContent = `HP:${this.player.hp}/${this.player.max_hp}  體力:${this.player.stamina}/${this.player.max_stamina}  金幣:${this.player.gold}  幸運(戰鬥):${this.player.luck_combat} 金幣幸運:${this.player.luck_gold}`;
 				}
-			// 綁定狀態面板上的裝備按鈕（每次更新都重新綁定）
+			// 綁定狀態面板上的裝備按鈕（每次更新都重新綁定）- 使用觸控友善事件
 			setTimeout(()=>{
-				Array.from(document.querySelectorAll('.unequip-btn')).forEach(b=>{ b.addEventListener('click', ()=>{ const slot = b.getAttribute('data-slot'); this.unequipItem(slot); }); });
-				Array.from(document.querySelectorAll('.open-equip-btn')).forEach(b=>{ b.addEventListener('click', ()=>{ const slot = b.getAttribute('data-slot'); this.showEquipmentPanel(slot); }); });
+				Array.from(document.querySelectorAll('.unequip-btn')).forEach(b=>{ 
+					addTouchClickEvent(b, ()=>{ 
+						const slot = b.getAttribute('data-slot'); 
+						this.unequipItem(slot); 
+					}); 
+				});
+				Array.from(document.querySelectorAll('.open-equip-btn')).forEach(b=>{ 
+					addTouchClickEvent(b, ()=>{ 
+						const slot = b.getAttribute('data-slot'); 
+						this.showEquipmentPanel(slot); 
+					}); 
+				});
 		}, 10);
 		const mapEl = document.getElementById('map-steps');
 		if (mapEl) {
@@ -1153,10 +1165,10 @@ function genEnemyName(type) {
 				itemsDiv.appendChild(el);
 			});
 			panel.style.display = 'block';
-			// 綁定購買
+			// 綁定購買 - 使用觸控友善的事件處理
 			Array.from(itemsDiv.querySelectorAll('.bm-buy')).forEach(b=>{
-				b.addEventListener('click', (e)=>{
-					const idx = parseInt(e.target.getAttribute('data-idx'));
+				addTouchClickEvent(b, ()=>{
+					const idx = parseInt(b.getAttribute('data-idx'));
 					if (panel._purchased >= 2) { showMessage(t('blackMarketLimit')); return; }
 					const offer = offers[idx];
 					if (!offer) return;
@@ -1179,8 +1191,8 @@ function genEnemyName(type) {
 					showMessage(`${t('revealAttributes')}: ${attrs.join('  ')}`);
 					panel._purchased += 1;
 					// 標記按鈕為已購買
-					e.target.textContent = t('purchased');
-					e.target.disabled = true;
+					b.textContent = t('purchased');
+					b.disabled = true;
 					game.updateStatus();
 					if (panel._purchased >= 2) {
 						showMessage(`${t('blackMarketLimit')} ${t('blackMarketEnd')}`);
@@ -1398,7 +1410,13 @@ function genEnemyName(type) {
 	}
 
 	caravanRest() {
+		this.inShop = true; // 標記進入驛站
 		showMessage('🐪 你遇到了一支商隊正在休息...');
+		// 停用移動按鈕
+		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
+		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
+		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		
 		const outcomes = [
 			{ type: 'trade', weight: 40 },
 			{ type: 'gift', weight: 30 },
@@ -1458,8 +1476,20 @@ function genEnemyName(type) {
 			showMessage(`📜 商隊分享了沙漠中的生存經驗和地圖情報。獲得 ${xp} 經驗值。`);
 		} else {
 			showMessage('⚔️ 這是一群偽裝的盜賊！');
+			this.inShop = false; // 遇到戰鬥，清除商店標記
 			this.battle('monster');
+			return; // 戰鬥時不恢復移動按鈕
 		}
+		
+		// 非戰鬥結果：延遲後恢復移動並生成方向提示
+		setTimeout(() => {
+			this.inShop = false;
+			showMessage('商隊繼續他們的旅程，你也該上路了。');
+			const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
+			const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
+			const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
+			this.generateDirectionHints();
+		}, 2000);
 	}
 
 	mirage() {
@@ -2791,11 +2821,11 @@ function startAutoSpinLoop() {
 			// panels generated in updateStatus -> look for these classes
 			Array.from(document.querySelectorAll('.unequip-btn')).forEach(b=>{
 				if (b._bound) return; b._bound = true;
-				b.addEventListener('click', ()=>{ const slot = b.getAttribute('data-slot'); game.unequipItem(slot); });
+				addTouchClickEvent(b, ()=>{ const slot = b.getAttribute('data-slot'); game.unequipItem(slot); });
 			});
 			Array.from(document.querySelectorAll('.open-equip-btn')).forEach(b=>{
 				if (b._bound) return; b._bound = true;
-				b.addEventListener('click', ()=>{ const slot = b.getAttribute('data-slot'); game.showEquipmentPanel(slot); });
+				addTouchClickEvent(b, ()=>{ const slot = b.getAttribute('data-slot'); game.showEquipmentPanel(slot); });
 			});
 		}
 		bindStatusEquipButtons();
