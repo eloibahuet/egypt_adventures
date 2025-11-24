@@ -928,9 +928,18 @@ body::after {
         height: 55px;
     }
     
+    #slot-controls {
+        position: relative;
+        z-index: 150;
+    }
+    
     #slot-controls button {
         padding: 8px 14px;
         font-size: 0.95em;
+        position: relative;
+        z-index: 150;
+        pointer-events: auto;
+        touch-action: manipulation;
     }
     
     /* 側邊欄和狀態框調整 */
@@ -1066,7 +1075,7 @@ body::after {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        gap: 10px;
+        gap: 5px;
         padding: 8px;
         order: 4;
     }
@@ -1080,6 +1089,8 @@ body::after {
         flex-direction: column;
         align-items: center;
         margin-bottom: 10px;
+        position: relative;
+        z-index: 10;
     }
     
     /* 角色資訊（原本在最前，現在移到第二位並靠左） */
@@ -1184,6 +1195,8 @@ body::after {
         margin-top: 8px;
         width: 100%;
         max-width: 320px;
+        position: relative;
+        z-index: 150;
     }
     
     #slot-controls button {
@@ -1192,7 +1205,9 @@ body::after {
         min-width: auto;
         width: 100%;
         position: relative;
-        z-index: 100;
+        z-index: 150;
+        pointer-events: auto;
+        touch-action: manipulation;
     }
     
     /* 輪盤區域（如果使用） */
@@ -1371,6 +1386,7 @@ body::after {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
+        gap: 5px;
     }
     
     /* 保持拉霸機在最上方 */
@@ -1378,6 +1394,8 @@ body::after {
         order: -1;
         flex: 0 0 100%;
         width: 100%;
+        position: relative;
+        z-index: 10;
     }
     
     /* 角色和敵人並列 */
@@ -1421,11 +1439,17 @@ body::after {
     
     #slot-controls {
         max-width: 280px;
+        position: relative;
+        z-index: 150;
     }
     
     #slot-controls button {
         padding: 6px 5px;
         font-size: 0.8em;
+        position: relative;
+        z-index: 150;
+        pointer-events: auto;
+        touch-action: manipulation;
     }
     
     /* 狀態框 - 保持並列，進一步縮小 */

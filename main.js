@@ -1005,8 +1005,16 @@ function genEnemyName(type) {
 		this.consecutivePrimaryCount = 0;
 		this.updateStatus();
 		// 戰鬥開始時啟用旋轉按鈕和自動旋轉按鈕
-		spinBtn.disabled = false;
-		const autoBtn = document.getElementById('auto-spin-btn'); if (autoBtn) autoBtn.disabled = false;
+		setTimeout(() => {
+			spinBtn.disabled = false;
+			const autoBtn = document.getElementById('auto-spin-btn'); 
+			if (autoBtn) {
+				autoBtn.disabled = false;
+				autoBtn.style.pointerEvents = 'auto';
+			}
+			// 確保停止按鈕一開始是禁用的
+			stopBtn.disabled = true;
+		}, 100);
 		// 自動啟動插槽並在短延遲後停止（模擬自動戰鬥）
 		startSpin();
 		setTimeout(()=> stopSequentially(), 900);
@@ -2707,10 +2715,15 @@ function startAutoSpinLoop() {
 			}
 			
 			// 啟用 spin（如果還在戰鬥中）
-			if (game.inBattle) {
-				spinBtn.disabled = false;
-			}
-			stopBtn.disabled = true;
+			// 使用 setTimeout 確保 game.inBattle 狀態已更新
+			setTimeout(() => {
+				if (game.inBattle) {
+					spinBtn.disabled = false;
+					const autoBtn = document.getElementById('auto-spin-btn');
+					if (autoBtn) autoBtn.disabled = false;
+				}
+				stopBtn.disabled = true;
+			}, 50);
 		});
 	}
 
