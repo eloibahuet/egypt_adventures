@@ -3193,26 +3193,13 @@ function startAutoSpinLoop() {
 				try { stopAutoSpinLoop(); } catch(e) {}
 			}
 			
-			// 啟用 spin（如果還在戰鬥中）- 使用全局函數
-			setTimeout(() => {
-				if (typeof window.enableBattleButtons === 'function') {
-					window.enableBattleButtons();
-				}
-			}, 150);
-		});
-	}
-
-	// 全局函數：強制啟用戰鬥按鈕
-	window.enableBattleButtons = function() {
-		if (game.inBattle) {
-			spinBtn.disabled = false;
-			const autoBtn = document.getElementById('auto-spin-btn');
-			if (autoBtn) {
-				autoBtn.disabled = false;
+			// 啟用 spin（如果還在戰鬥中）
+			if (game.inBattle) {
+				spinBtn.disabled = false;
 			}
 			stopBtn.disabled = true;
-		}
-	};
+		});
+	}
 	
 	// 事件
 	spinBtn.addEventListener('click', ()=>{
