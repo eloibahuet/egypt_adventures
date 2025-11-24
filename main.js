@@ -2226,50 +2226,50 @@ function genEnemyName(type) {
 			transform: translate(-50%, -50%);
 			background: linear-gradient(180deg, #fff9e6, #ffe4b3);
 			border: 3px solid #d4a855;
-			border-radius: 12px;
-			padding: 24px;
+			border-radius: 8px;
+			padding: 12px;
 			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 			z-index: 100;
-			min-width: 450px;
-			max-width: 600px;
-			max-height: 80vh;
+			width: 90vw;
+			max-width: 450px;
+			max-height: 85vh;
 			overflow-y: auto;
 		`;
 		
 		panel.innerHTML = `
-			<h2 style="color: #8b4513; margin-top: 0; text-align: center;">🏪 沙漠驛站</h2>
+			<h2 style="color: #8b4513; margin: 0 0 12px 0; text-align: center; font-size: 1.3em;">🏪 沙漠驛站</h2>
 			
-			<div style="background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-				<h3 style="margin-top: 0; color: #d4a855;">💰 你的金幣: <span id="tp-gold">${this.player.gold}</span></h3>
+			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
+				<h3 style="margin: 0; color: #d4a855; font-size: 1em;">💰 你的金幣: <span id="tp-gold">${this.player.gold}</span></h3>
 			</div>
 			
-			<div style="background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-				<h3 style="margin-top: 0; color: #2ecc71;">🛒 補給物資</h3>
-				<div style="display: flex; flex-direction: column; gap: 8px;">
-					<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8f8f8; border-radius: 4px;">
+			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
+				<h3 style="margin: 0 0 8px 0; color: #2ecc71; font-size: 1em;">🛒 補給物資</h3>
+				<div style="display: flex; flex-direction: column; gap: 6px;">
+					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.9em;">
 						<span>🧪 藥水 x1</span>
-						<button class="tp-buy-btn" data-item="potion" data-price="50" style="padding: 6px 12px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">50金幣</button>
+						<button class="tp-buy-btn" data-item="potion" data-price="50" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">50金幣</button>
 					</div>
-					<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8f8f8; border-radius: 4px;">
+					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.85em;">
 						<span>🍖 食物（恢復30HP+15體力）</span>
-						<button class="tp-buy-btn" data-item="food" data-price="40" style="padding: 6px 12px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">40金幣</button>
+						<button class="tp-buy-btn" data-item="food" data-price="40" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">40金幣</button>
 					</div>
-					<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8f8f8; border-radius: 4px;">
+					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.85em;">
 						<span>💊 完全恢復（HP+體力全滿）</span>
-						<button class="tp-buy-btn" data-item="fullheal" data-price="80" style="padding: 6px 12px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">80金幣</button>
+						<button class="tp-buy-btn" data-item="fullheal" data-price="80" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">80金幣</button>
 					</div>
 				</div>
 			</div>
 			
-			<div style="background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-				<h3 style="margin-top: 0; color: #e74c3c;">💼 出售裝備</h3>
-				<div id="tp-inventory" style="max-height: 250px; overflow-y: auto;">
+			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
+				<h3 style="margin: 0 0 8px 0; color: #e74c3c; font-size: 1em;">💼 出售裝備</h3>
+				<div id="tp-inventory" style="max-height: 180px; overflow-y: auto;">
 					<!-- 裝備列表將動態生成 -->
 				</div>
 			</div>
 			
-			<div style="text-align: center; margin-top: 16px;">
-				<button id="tp-close" style="padding: 10px 24px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1.1em;">離開驛站</button>
+			<div style="text-align: center; margin-top: 10px;">
+				<button id="tp-close" style="padding: 8px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1em;">離開驛站</button>
 			</div>
 		`;
 		
@@ -2300,12 +2300,12 @@ function genEnemyName(type) {
 				const rarityColor = item.rarity === 'epic' ? '#9b59b6' : (item.rarity === 'rare' ? '#3498db' : '#95a5a6');
 				
 				html += `
-					<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8f8f8; border-radius: 4px; margin-bottom: 6px; border-left: 4px solid ${rarityColor};">
-						<div style="flex: 1;">
-							<div style="font-weight: bold;">${item.name}</div>
-							<div style="font-size: 0.85em; color: #666;">${item.rarity}</div>
+					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; margin-bottom: 5px; border-left: 3px solid ${rarityColor};">
+						<div style="flex: 1; min-width: 0;">
+							<div style="font-weight: bold; font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</div>
+							<div style="font-size: 0.75em; color: #666;">${item.rarity}</div>
 						</div>
-						<button class="tp-sell-btn" data-idx="${idx}" data-price="${basePrice}" style="padding: 6px 12px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">賣出 ${basePrice}金</button>
+						<button class="tp-sell-btn" data-idx="${idx}" data-price="${basePrice}" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap; margin-left: 6px;">賣出 ${basePrice}金</button>
 					</div>
 				`;
 			});
