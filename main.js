@@ -3133,172 +3133,99 @@ function startAutoSpinLoop() {
 		// 禁用 stop 按鈕，依序停止每一軸
 		stopBtn.disabled = true;
 		const results = [];
-		const targetSymbols = []; // 儲存每個輪軸的目標符號
-		const stopOne = (index) => {
+		
+		// 統一的停止函數，確保符號精確對齊
+		const stopReel = (index, withAnimation = true) => {
 			return new Promise((resolve) => {
 				// 隨機選擇一個符號作為目標
 				const targetSymbol = pickWeightedSymbol();
-				targetSymbols[index] = targetSymbol; // 儲存目標符號
 				const strip = reels[index].querySelector('.strip');
+				
 				// 停止 spinning loop
 				reelState[index].spinning = false;
 				if (reelState[index].raf) cancelAnimationFrame(reelState[index].raf);
 
-				// 計算目前 pos
-				let currentPos = reelState[index].anim ? reelState[index].anim.pos : 0;
-				const repeats = 8;
-				const totalHeight = SYMBOLS.length * SYMBOL_HEIGHT * repeats;
-				const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT; // one cycle height
-
-				// 選擇目標符號
-				const targetIdx = SYMBOLS.indexOf(targetSymbol);
-				const symbolIndex = targetIdx >= 0 ? targetIdx : Math.floor(Math.random()*SYMBOLS.length);
-
-				const extraRounds = Math.floor(Math.random()*3) + 1;
-
-				// 高亮框在 top: 30px，高度 60px（覆蓋 30-90px）
-				// 要讓符號 N 的頂部對齊到 30px：translateY(-(N * 60 + 30))
-				// 即：strip 位置 = N * 60 + 30
-				const baseCycle = Math.floor(currentPos / singleBlock);
-				
-				// 目標位置：符號索引 * 60 + 30（偏移到高亮框位置）
-				let candidate = baseCycle * singleBlock + symbolIndex * SYMBOL_HEIGHT + 30;
-				
-				// 如果已經過了，移到下一個循環
-				if (candidate <= currentPos) {
-					candidate += singleBlock;
+				// 找到目標符號在 SYMBOLS 陣列中的索引
+				const symbolIndex = SYMBOLS.indexOf(targetSymbol);
+				if (symbolIndex === -1) {
+					console.error(`Symbol ${targetSymbol} not found in SYMBOLS array`);
+					resolve();
+					return;
 				}
 				
-				// 加上額外的旋轉圈數
-				const targetPos = candidate + extraRounds * singleBlock;
-
-				// 平滑轉到 targetPos
-				const duration = 1000 + Math.random()*800; // ms
-				const start = performance.now();
-				const from = currentPos;
-				const to = targetPos;
-
-				const animateStop = (now) => {
-					const t = Math.min(1, (now - start) / duration);
-					const ease = 1 - Math.pow(1 - t, 3);
-					const pos = from + (to - from) * ease;
-					// 以 totalHeight 做模循環
-					strip.style.transform = `translateY(-${pos % totalHeight}px)`;
-					if (t < 1) requestAnimationFrame(animateStop);
-					else {
-						// 確保最終位置精確對齊到符號
-						const finalPos = to % totalHeight;
-						// 強制設定最終位置，確保符號對齊
-						strip.style.transition = 'none';
-						strip.style.transform = `translateY(-${finalPos}px)`;
+				// 計算目標位置
+				// strip 中有 8 個重複的 SYMBOLS 陣列
+				// 使用第 3 個循環（中間位置）來確保符號在可視範圍內
+				const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT; // 420px (7 symbols × 60px)
+				const targetCycle = 3; // 使用第 3 個循環
+				
+				// 目標位置計算：
+				// - targetCycle * singleBlock: 跳到第 N 個循環
+				// - symbolIndex * SYMBOL_HEIGHT: 符號在循環中的位置
+				// - 30: 偏移量，讓符號頂部對齊到高亮框頂部（30px）
+				const targetPos = targetCycle * singleBlock + symbolIndex * SYMBOL_HEIGHT + 30;
+				
+				console.log(`Reel ${index}: Target=${targetSymbol}, symbolIndex=${symbolIndex}, targetPos=${targetPos}px`);
+				
+				if (withAnimation) {
+					// 第一個輪軸：帶動畫
+					const currentPos = reelState[index].anim ? reelState[index].anim.pos : 0;
+					const duration = 1000 + Math.random() * 500;
+					const start = performance.now();
+					
+					const animate = (now) => {
+						const t = Math.min(1, (now - start) / duration);
+						const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+						const pos = currentPos + (targetPos - currentPos) * ease;
+						strip.style.transform = `translateY(-${pos}px)`;
 						
-						// 等待 DOM 更新後再記錄結果
-						setTimeout(() => {
-							// 直接使用預先決定的目標符號，確保顯示與結果一致
+						if (t < 1) {
+							requestAnimationFrame(animate);
+						} else {
+							// 動畫結束，強制設定精確位置
+							strip.style.transform = `translateY(-${targetPos}px)`;
 							results[index] = targetSymbol;
-							console.log(`Reel ${index} stopped at symbol: ${targetSymbol}`);
-							resolve();
-						}, 100);
-					}
-				};
-				requestAnimationFrame(animateStop);
+							console.log(`Reel ${index}: Animation complete, final position=${targetPos}px, symbol=${targetSymbol}`);
+							setTimeout(resolve, 50);
+						}
+					};
+					requestAnimationFrame(animate);
+				} else {
+					// 第二、三個輪軸：快速停止
+					strip.style.transition = 'transform 0.3s ease-out';
+					strip.style.transform = `translateY(-${targetPos}px)`;
+					
+					setTimeout(() => {
+						strip.style.transition = '';
+						// 再次確認位置
+						strip.style.transform = `translateY(-${targetPos}px)`;
+						results[index] = targetSymbol;
+						console.log(`Reel ${index}: Quick stop complete, final position=${targetPos}px, symbol=${targetSymbol}`);
+						resolve();
+					}, 350);
+				}
 			});
 		};
 
-		// 停第一軸，第一個停止後，第二第三軸直接停止（無動畫）
-		stopOne(0).then(()=> {
-			// 第二和第三軸直接停止，無延遲動畫
-			const stopInstantly = (index) => {
-				return new Promise((resolve) => {
-					const targetSymbol = pickWeightedSymbol();
-					targetSymbols[index] = targetSymbol; // 儲存目標符號
-					const strip = reels[index].querySelector('.strip');
-					reelState[index].spinning = false;
-					if (reelState[index].raf) cancelAnimationFrame(reelState[index].raf);
-					
-					const targetIdx = SYMBOLS.indexOf(targetSymbol);
-					const symbolIndex = targetIdx >= 0 ? targetIdx : 0;
-					
-					// 使用固定的循環位置（第2個循環），確保符號在可視範圍內
-					const repeats = 8;
-					const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT;
-					const baseCycle = 2; // 固定使用第2個循環
-					
-					// 目標位置：符號頂部對齊到高亮框位置（30px）
-					const finalPos = baseCycle * singleBlock + symbolIndex * SYMBOL_HEIGHT + 30;
-					
-					// 直接設定最終位置，不使用動畫，確保符號精確對齊
-					strip.style.transition = 'transform 0.2s ease-out';
-					strip.style.transform = `translateY(-${finalPos}px)`;
-					
-					// 等待動畫完成後確保位置正確
-					setTimeout(() => {
-						strip.style.transition = '';
-						// 再次強制設定位置，確保符號對齊
-						strip.style.transform = `translateY(-${finalPos}px)`;
-						// 直接使用預先決定的目標符號，確保顯示與結果一致
-						results[index] = targetSymbol;
-						console.log(`Reel ${index} stopped at symbol: ${targetSymbol}`);
-						resolve();
-					}, 300);
-				});
-			};
-			
-			return Promise.all([stopInstantly(1), stopInstantly(2)]);
-		}).then(()=> {
-			// 再次等待確保所有動畫完成和DOM更新
-			return new Promise(resolve => setTimeout(resolve, 200));
-		}).then(()=> {
-			// 從實際顯示位置讀取最終結果，確保顯示與判定一致
-			console.log('=== Reading slot results from actual display ===');
+		// 依序停止三個輪軸
+		stopReel(0, true).then(() => {
+			return Promise.all([
+				stopReel(1, false),
+				stopReel(2, false)
+			]);
+		}).then(() => {
+			// 等待 DOM 完全更新
+			return new Promise(resolve => setTimeout(resolve, 100));
+		}).then(() => {
+			// 驗證結果
+			console.log('=== Final verification ===');
 			for (let i = 0; i < 3; i++) {
 				const strip = reels[i].querySelector('.strip');
-				if (!strip) {
-					results[i] = targetSymbols[i] || '⚔️';
-					console.log(`Reel ${i}: No strip found, using fallback ${results[i]}`);
-					continue;
-				}
-				
-				// 方法：直接檢查高亮框範圍內的符號元素
-				const symbolElements = strip.querySelectorAll('.symbol');
-				const reelRect = reels[i].getBoundingClientRect();
-				const highlightTop = 30; // 高亮框頂部位置
-				const highlightBottom = 90; // 高亮框底部位置（30 + 60）
-				
-				let foundSymbol = null;
-				
-				// 遍歷所有符號元素，找出在高亮框範圍內的
-				symbolElements.forEach((el, idx) => {
-					const elRect = el.getBoundingClientRect();
-					const relativeTop = elRect.top - reelRect.top;
-					const relativeBottom = relativeTop + el.offsetHeight;
-					
-					// 檢查符號是否在高亮框中央區域（允許±10px誤差）
-					if (relativeTop >= highlightTop - 10 && relativeTop <= highlightTop + 10) {
-						foundSymbol = el.textContent.trim();
-						console.log(`Reel ${i}: Found symbol at idx=${idx}, top=${relativeTop.toFixed(1)}px, symbol=${foundSymbol}`);
-					}
-				});
-				
-				// 如果找到了符號，使用它；否則使用預定目標
-				if (foundSymbol && SYMBOLS.includes(foundSymbol)) {
-					results[i] = foundSymbol;
-					console.log(`Reel ${i}: Using found symbol ${foundSymbol}`);
-				} else {
-					// 備用方案：從 translateY 計算
+				if (strip) {
 					const transform = strip.style.transform;
 					const match = transform.match(/-?[\d.]+/);
 					const currentPos = match ? parseFloat(match[0]) : 0;
-					
-					const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT;
-					const posInCycle = currentPos % singleBlock;
-					let symbolIndex = Math.round((posInCycle - 30) / SYMBOL_HEIGHT);
-					
-					if (symbolIndex < 0) symbolIndex += SYMBOLS.length;
-					symbolIndex = symbolIndex % SYMBOLS.length;
-					
-					results[i] = SYMBOLS[symbolIndex];
-					console.log(`Reel ${i}: Using calculated symbol from pos=${currentPos.toFixed(1)}px -> ${results[i]}`);
+					console.log(`Reel ${i}: Final transform=${transform}, result=${results[i]}`);
 				}
 			}
 			
