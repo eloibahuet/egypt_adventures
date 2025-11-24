@@ -338,17 +338,19 @@ A4 C2 E2 | F4 G2 A2 | G4 F2 E2 | A8 ||
 			
 			oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
 			
-			// 設定音量包絡（ADSR）
-			const now = this.audioContext.currentTime;
-			const attackTime = this.currentTrack === 'battle' ? 0.01 : 0.02; // 戰鬥音樂攻擊更快
-			const releaseTime = this.currentTrack === 'battle' ? 0.05 : 0.1; // 戰鬥音樂釋放更短
-			
-			gainNode.gain.setValueAtTime(0, now);
-			gainNode.gain.linearRampToValueAtTime(this.volume * 0.8, now + attackTime); // 戰鬥音量稍微降低避免刺耳
-			gainNode.gain.setValueAtTime(this.volume * 0.8, now + duration - releaseTime);
-			gainNode.gain.linearRampToValueAtTime(0, now + duration);
-			
-			oscillator.start(now);
+		// 設定音量包絡（ADSR）
+		const now = this.audioContext.currentTime;
+		const attackTime = this.currentTrack === 'battle' ? 0.01 : 0.02; // 戰鬥音樂攻擊更快
+		const releaseTime = this.currentTrack === 'battle' ? 0.05 : 0.1; // 戰鬥音樂釋放更短
+		
+		// 根據音軌類型調整音量：戰鬥音樂使用方波較刺耳，降低至 80%
+		const trackVolumeMultiplier = this.currentTrack === 'battle' ? 0.8 : 1.0;
+		const finalVolume = this.volume * trackVolumeMultiplier;
+		
+		gainNode.gain.setValueAtTime(0, now);
+		gainNode.gain.linearRampToValueAtTime(finalVolume, now + attackTime);
+		gainNode.gain.setValueAtTime(finalVolume, now + duration - releaseTime);
+		gainNode.gain.linearRampToValueAtTime(0, now + duration);			oscillator.start(now);
 			oscillator.stop(now + duration);
 			
 			this.currentNote = { oscillator, gainNode };
