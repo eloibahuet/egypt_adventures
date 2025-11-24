@@ -3066,17 +3066,19 @@ function startAutoSpinLoop() {
 					strip.style.transform = `translateY(-${pos % totalHeight}px)`;
 					if (t < 1) requestAnimationFrame(animateStop);
 					else {
-					// 確保最終位置精確對齊
-					const finalPos = to % totalHeight;
-					// 使用 requestAnimationFrame 確保平滑過渡
-					requestAnimationFrame(() => {
+						// 確保最終位置精確對齊到符號
+						const finalPos = to % totalHeight;
+						// 強制設定最終位置，確保符號對齊
+						strip.style.transition = 'none';
 						strip.style.transform = `translateY(-${finalPos}px)`;
-					});						// 等待渲染完成後使用預定的目標符號
+						
+						// 等待 DOM 更新後再記錄結果
 						setTimeout(() => {
 							// 直接使用預先決定的目標符號，確保顯示與結果一致
 							results[index] = targetSymbol;
+							console.log(`Reel ${index} stopped at symbol: ${targetSymbol}`);
 							resolve();
-						}, 50);
+						}, 100);
 					}
 				};
 				requestAnimationFrame(animateStop);
@@ -3105,29 +3107,37 @@ function startAutoSpinLoop() {
 					// 目標位置：符號頂部對齊到高亮框位置（30px）
 					const finalPos = baseCycle * singleBlock + symbolIndex * SYMBOL_HEIGHT + 30;
 					
-					// 使用 requestAnimationFrame 確保順序正確，避免閃現
-					requestAnimationFrame(() => {
-						strip.style.transition = 'transform 0.15s ease-out';
-						requestAnimationFrame(() => {
-							strip.style.transform = `translateY(-${finalPos}px)`;
-						});
-					});
+					// 直接設定最終位置，不使用動畫，確保符號精確對齊
+					strip.style.transition = 'transform 0.2s ease-out';
+					strip.style.transform = `translateY(-${finalPos}px)`;
 					
-					// 等待動畫完成後直接使用目標符號
+					// 等待動畫完成後確保位置正確
 					setTimeout(() => {
 						strip.style.transition = '';
+						// 再次強制設定位置，確保符號對齊
+						strip.style.transform = `translateY(-${finalPos}px)`;
 						// 直接使用預先決定的目標符號，確保顯示與結果一致
 						results[index] = targetSymbol;
+						console.log(`Reel ${index} stopped at symbol: ${targetSymbol}`);
 						resolve();
-					}, 250);
+					}, 300);
 				});
 			};
 			
 			return Promise.all([stopInstantly(1), stopInstantly(2)]);
 		}).then(()=> {
 			// 再次等待確保所有動畫完成
-			return new Promise(resolve => setTimeout(resolve, 50));
+			return new Promise(resolve => setTimeout(resolve, 100));
 		}).then(()=> {
+			// 確保結果陣列完整
+			console.log('Final results array:', results);
+			if (results.length !== 3 || results.some(r => !r)) {
+				console.error('Results array is incomplete:', results);
+				// 如果結果不完整，使用 targetSymbols 作為備用
+				for (let i = 0; i < 3; i++) {
+					if (!results[i]) results[i] = targetSymbols[i] || '⚔️';
+				}
+			}
 			showMessage(`插槽結果： ${results.join(' | ')}`);
 			// 把結果傳給遊戲邏輯進行處理（attack/skill/defend/enemy）
 			try {
