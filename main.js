@@ -3088,19 +3088,21 @@ function startAutoSpinLoop() {
 					});						// 等待渲染完成後讀取符號
 						setTimeout(() => {
 							try {
-								// 使用畫面取樣來判定中間的符號，讀取高亮框中心位置（top + 60px）
-								const rect = reels[index].getBoundingClientRect();
-								const cx = rect.left + rect.width / 2;
-								const cy = rect.top + 60; // 高亮框中心在 top + 60px
-								let el = document.elementFromPoint(cx, cy);
-								// 往上找父節點，直到找到 .symbol
-								while (el && !el.classList.contains('symbol')) {
-									el = el.parentElement;
-								}
-								const landedSymbol = el ? el.textContent.trim() : targetSymbol;
-								// 確保符號不為空，且在有效符號列表中
-								if (landedSymbol && SYMBOLS.includes(landedSymbol)) {
-									results[index] = landedSymbol;
+								// 直接從 strip 的 transform 讀取符號位置
+								const transformValue = strip.style.transform;
+								const match = transformValue.match(/translateY\(-?([0-9.]+)px\)/);
+								if (match) {
+									const currentOffset = parseFloat(match[1]);
+									// 高亮框中心在 60px，符號高度 60px
+									// 符號索引 = (offset - 30) / 60 來找到對應的符號
+									const adjustedOffset = (currentOffset - 30) % (SYMBOLS.length * SYMBOL_HEIGHT);
+									const symbolIdx = Math.round(adjustedOffset / SYMBOL_HEIGHT) % SYMBOLS.length;
+									const landedSymbol = SYMBOLS[symbolIdx];
+									if (landedSymbol && SYMBOLS.includes(landedSymbol)) {
+										results[index] = landedSymbol;
+									} else {
+										results[index] = targetSymbol;
+									}
 								} else {
 									results[index] = targetSymbol;
 								}
@@ -3149,19 +3151,17 @@ function startAutoSpinLoop() {
 					setTimeout(() => {
 						strip.style.transition = '';
 						
-						// 從畫面讀取實際顯示的符號，讀取高亮框中心位置
+						// 直接從 strip 的 transform 讀取符號位置
 						try {
-							const rect = reels[index].getBoundingClientRect();
-							const cx = rect.left + rect.width / 2;
-							const cy = rect.top + 60; // 高亮框中心在 top + 60px
-							let el = document.elementFromPoint(cx, cy);
-							let attempts = 0;
-							while (el && !el.classList.contains('symbol') && attempts < 10) {
-								el = el.parentElement;
-								attempts++;
-							}
-							if (el && el.classList.contains('symbol')) {
-								const landedSymbol = el.textContent.trim();
+							const transformValue = strip.style.transform;
+							const match = transformValue.match(/translateY\(-?([0-9.]+)px\)/);
+							if (match) {
+								const currentOffset = parseFloat(match[1]);
+								// 高亮框中心在 60px，符號高度 60px
+								// 符號索引 = (offset - 30) / 60 來找到對應的符號
+								const adjustedOffset = (currentOffset - 30) % (SYMBOLS.length * SYMBOL_HEIGHT);
+								const symbolIdx = Math.round(adjustedOffset / SYMBOL_HEIGHT) % SYMBOLS.length;
+								const landedSymbol = SYMBOLS[symbolIdx];
 								if (landedSymbol && SYMBOLS.includes(landedSymbol)) {
 									results[index] = landedSymbol;
 								} else {
