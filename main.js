@@ -2375,6 +2375,8 @@ function genEnemyName(type) {
 				if (mf) mf.disabled = false;
 				if (ml) ml.disabled = false;
 				if (mr) mr.disabled = false;
+				// 生成方向提示
+				this.generateDirectionHints();
 			});
 		}
 	}
