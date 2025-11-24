@@ -1061,39 +1061,41 @@ body::after {
         order: 3;
     }
     
-    /* 戰鬥區域 - 重新排列：拉霸機在上，角色敵人並列在下 */
+    /* 戰鬥區域 - 使用 flexbox 改變視覺順序 */
     #battle-area {
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
         gap: 10px;
         padding: 8px;
         order: 4;
     }
     
-    /* 拉霸機區域排在最前面 */
+    /* 拉霸機區域移到最上方（原本在中間） */
     #slot-center {
-        order: 1;
+        order: -1;
+        width: 100%;
+        flex: 0 0 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 10px;
     }
     
-    /* 角色資訊排第二 */
+    /* 角色資訊（原本在最前，現在移到第二位並靠左） */
     #player-status {
-        order: 2;
-        display: inline-block;
-        vertical-align: top;
+        order: 1;
+        flex: 0 0 calc(50% - 5px);
         width: calc(50% - 5px) !important;
         max-width: calc(50% - 5px) !important;
-        float: left;
-        margin-right: 10px;
     }
     
-    /* 敵人資訊排第三，與角色並列 */
+    /* 敵人資訊（原本在最後，現在與角色並列） */
     #enemy-status {
-        order: 3;
-        display: inline-block;
-        vertical-align: top;
+        order: 2;
+        flex: 0 0 calc(50% - 5px);
         width: calc(50% - 5px) !important;
         max-width: calc(50% - 5px) !important;
-        float: left;
     }
     
     /* 角色/敵人狀態框 - 並列顯示 */
@@ -1131,17 +1133,7 @@ body::after {
         margin-bottom: 3px;
     }
     
-    /* 拉霸機區域佔滿整行 */
-    #slot-center {
-        width: 100%;
-        gap: 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        clear: both;
-        margin-bottom: 10px;
-    }
-    
+    /* 拉霸機樣式 */
     #slot-machine {
         gap: 4px;
         padding: 25px 20px;
@@ -1149,13 +1141,6 @@ body::after {
         margin: 0 auto;
         width: auto;
         display: flex;
-    }
-    
-    /* 確保狀態框在拉霸機下方且並列 */
-    #battle-area::after {
-        content: '';
-        display: table;
-        clear: both;
     }
     
     #slot-machine::before,
@@ -1381,24 +1366,33 @@ body::after {
         padding: 10px 15px;
     }
     
-    /* 保持角色和敵人並列，確保順序正確 */
-    #slot-center {
-        order: 1;
+    /* 確保戰鬥區域使用 flex 布局 */
+    #battle-area {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
     }
     
+    /* 保持拉霸機在最上方 */
+    #slot-center {
+        order: -1;
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    /* 角色和敵人並列 */
     #player-status {
-        order: 2;
+        order: 1;
+        flex: 0 0 calc(50% - 5px);
         width: calc(50% - 5px) !important;
         max-width: calc(50% - 5px) !important;
-        float: left;
-        margin-right: 10px;
     }
     
     #enemy-status {
-        order: 3;
+        order: 2;
+        flex: 0 0 calc(50% - 5px);
         width: calc(50% - 5px) !important;
         max-width: calc(50% - 5px) !important;
-        float: left;
     }
     
     /* 拉霸機進一步縮小 */
