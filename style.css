@@ -1034,29 +1034,54 @@ body::after {
         letter-spacing: 4px;
     }
     
-    /* 戰鬥區域垂直排列 */
+    /* 戰鬥區域 - 改為包裹式布局，角色和敵人並列 */
     #battle-area {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
     }
     
-    /* 角色/敵人狀態框 */
+    /* 角色/敵人狀態框 - 並列顯示，各佔50%減去間距 */
     .status-box-side {
-        flex: 1 1 auto;
-        width: 100%;
-        padding: 10px;
-        min-height: auto;
+        flex: 1 1 calc(50% - 4px);
+        width: calc(50% - 4px);
+        max-width: calc(50% - 4px);
+        padding: 6px;
+        min-height: 110px;
+        font-size: 0.8em;
+        box-sizing: border-box;
     }
     
     .status-box-side .stat-label {
-        font-size: 1em;
-        margin-bottom: 6px;
+        font-size: 0.9em;
+        margin-bottom: 3px;
     }
     
     .stats-row {
-        font-size: 0.88em;
-        gap: 6px;
+        font-size: 0.78em;
+        gap: 3px;
+        flex-wrap: wrap;
+    }
+    
+    .stats-row > * {
+        flex: 1 1 auto;
+        min-width: 42%;
+        font-size: 0.95em;
+    }
+    
+    /* HP/XP 條文字大小調整 */
+    .hp-row,
+    .xp-row {
+        font-size: 0.9em;
+        margin-bottom: 4px;
+    }
+    
+    /* 拉霸機區域佔滿整行 */
+    #slot-center {
+        flex: 1 1 100%;
+        width: 100%;
+        gap: 10px;
     }
     
     /* 拉霸機區域優化 */
@@ -1142,24 +1167,31 @@ body::after {
         width: 100%;
     }
     
-    /* 側邊欄 */
+    /* 側邊欄 - 大幅縮小 */
     #sidebar {
         width: 100%;
-        font-size: 0.9em;
-        padding: 12px;
+        font-size: 0.75em;
+        padding: 8px 10px;
     }
     
     #sidebar h2 {
-        font-size: 1.1em;
-        margin-bottom: 6px;
+        font-size: 0.95em;
+        margin-bottom: 4px;
+        margin-top: 4px;
     }
     
     #sidebar ul {
-        padding-left: 18px;
+        padding-left: 14px;
+        margin: 0;
     }
     
     #sidebar li {
-        margin-bottom: 3px;
+        margin-bottom: 2px;
+        line-height: 1.3;
+    }
+    
+    #sidebar strong {
+        font-size: 1.1em;
     }
     
     /* 裝備面板 */
@@ -1297,13 +1329,29 @@ body::after {
         font-size: 0.85em;
     }
     
-    /* 狀態框 */
+    /* 狀態框 - 保持並列，進一步縮小 */
     .status-box-side {
-        padding: 8px;
+        padding: 5px;
+        font-size: 0.75em;
+        min-height: 95px;
+        flex: 1 1 calc(50% - 4px);
+        max-width: calc(50% - 4px);
+    }
+    
+    .status-box-side .stat-label {
+        font-size: 0.88em;
+        margin-bottom: 2px;
     }
     
     .stats-row {
-        font-size: 0.82em;
+        font-size: 0.73em;
+        gap: 2px;
+    }
+    
+    .hp-row,
+    .xp-row {
+        font-size: 0.85em;
+        margin-bottom: 3px;
     }
     
     /* 移動按鈕 */
@@ -1312,14 +1360,25 @@ body::after {
         padding: 8px 10px;
     }
     
-    /* 側邊欄 */
+    /* 側邊欄 - 極小螢幕進一步縮小 */
     #sidebar {
-        padding: 10px;
-        font-size: 0.85em;
+        padding: 6px 8px;
+        font-size: 0.7em;
     }
     
     #sidebar h2 {
-        font-size: 1em;
+        font-size: 0.9em;
+        margin-bottom: 3px;
+        margin-top: 3px;
+    }
+    
+    #sidebar ul {
+        padding-left: 12px;
+    }
+    
+    #sidebar li {
+        margin-bottom: 1px;
+        line-height: 1.25;
     }
 }
 
