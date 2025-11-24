@@ -949,6 +949,12 @@ body::after {
     button {
         min-height: 40px;
     }
+    
+    /* 確保面板在平板也有正確的 z-index */
+    #equipment-panel,
+    #blackmarket-panel {
+        z-index: 200 !important;
+    }
 }
 
 /* ===== 手機響應式設計（最大 600px）===== */
@@ -1253,19 +1259,25 @@ body::after {
         font-size: 1.1em;
     }
     
-    /* 裝備面板 */
+    /* 裝備面板 - 手機版全螢幕顯示 */
     #equipment-panel {
         width: 90% !important;
         left: 5% !important;
         right: 5% !important;
         top: 80px !important;
+        z-index: 200 !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
     }
     
-    /* 黑市面板 */
+    /* 黑市面板 - 手機版全螢幕顯示 */
     #blackmarket-panel {
         width: 90% !important;
         left: 5% !important;
         top: 80px !important;
+        z-index: 200 !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
     }
     
     .equip-row {
@@ -1470,6 +1482,12 @@ body::after {
     #sidebar li {
         margin-bottom: 1px;
         line-height: 1.25;
+    }
+    
+    /* 確保面板在極小螢幕也有正確的 z-index */
+    #equipment-panel,
+    #blackmarket-panel {
+        z-index: 200 !important;
     }
 }
 
