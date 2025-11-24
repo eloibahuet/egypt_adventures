@@ -5,9 +5,10 @@ const MusicSystem = {
 	volume: 0.5,
 	currentNote: null,
 	isEnabled: false,
+	currentTrack: 'exploration', // 'exploration' 或 'battle'
 	
-	// ABC 記譜 - Egypt_Stage_32bars
-	abcNotation: `
+	// ABC 記譜 - 探索音樂
+	explorationMusic: `
 X:1
 T:Egypt_Stage_32bars
 M:4/4
@@ -34,6 +35,25 @@ A4 C2 D2 | E4 F2 E2 | A4 G2 F2 | E4 C2 B,2 |
 A4 C2 E2 | F4 G2 A2 | G4 F2 E2 | A8 ||
 `,
 	
+	// ABC 記譜 - 戰鬥音樂（僅使用主旋律，簡化版本）
+	battleMusic: `
+X:10
+T:Egypt_Battle_Full_32bars
+M:4/4
+L:1/8
+Q:188
+K:Aphr
+% LEAD MELODY
+A2 C2 A2 C2 | D4 C2 B,2 | A2 C2 D2 E2 | F4 E2 D2 |
+C2 E2 C2 E2 | F4 E2 D2 | A4 G2 F2 | E6 z2 |
+C'2 B2 A2 G2 | F4 E2 D2 | C2 E2 A2 G2 | F4 E2 C2 |
+A2 C'2 A2 G2 | F2 E2 D2 C2 | B,2 C2 D2 E2 | A6 z2 |
+E2 F2 G2 A2 | C'4 B2 A2 | A2 G2 F2 E2 | D4 C2 B,2 |
+A2 C2 A2 C2 | D4 C2 B,2 | A2 C2 D2 E2 | F4 E2 D2 |
+A4 C2 D2 | E4 F2 E2 | A4 G2 F2 | E4 C2 B,2 |
+A4 C2 E2 | F4 G2 A2 | G4 F2 E2 | A8 ||
+`,
+	
 	init() {
 		// 初始化 Web Audio API
 		if (!this.audioContext) {
@@ -46,10 +66,38 @@ A4 C2 E2 | F4 G2 A2 | G4 F2 E2 | A8 ||
 		this.isEnabled = saved === 'true';
 		this.volume = savedVolume ? parseFloat(savedVolume) : 0.5;
 		
-		// 解析 ABC 記譜
-		this.parsedMusic = this.parseABC(this.abcNotation);
+		// 解析兩種音樂
+		this.parsedExploration = this.parseABC(this.explorationMusic);
+		this.parsedBattle = this.parseABC(this.battleMusic);
+		this.parsedMusic = this.parsedExploration; // 預設使用探索音樂
 		
 		this.updateUI();
+	},
+	
+	switchTrack(trackName) {
+		if (trackName === this.currentTrack) return;
+		
+		const wasPlaying = this.isPlaying;
+		
+		// 停止當前音樂
+		this.stop();
+		
+		// 切換音軌
+		this.currentTrack = trackName;
+		if (trackName === 'battle') {
+			this.parsedMusic = this.parsedBattle;
+			console.log('🎵 Switched to battle music');
+		} else {
+			this.parsedMusic = this.parsedExploration;
+			console.log('🎵 Switched to exploration music');
+		}
+		
+		// 如果之前在播放，繼續播放新音軌
+		if (wasPlaying && this.isEnabled) {
+			setTimeout(() => {
+				this.play();
+			}, 100);
+		}
 	},
 	
 	// 音符頻率對照表（基於 A Phrygian Dominant 音階）
@@ -198,18 +246,25 @@ A4 C2 E2 | F4 G2 A2 | G4 F2 E2 | A8 ||
 			oscillator.connect(gainNode);
 			gainNode.connect(this.audioContext.destination);
 			
-			// 使用三角波創造較柔和的音色
-			oscillator.type = 'triangle';
+			// 根據音軌選擇音色
+			if (this.currentTrack === 'battle') {
+				// 戰鬥音樂：使用方波創造更尖銳、激烈的音色
+				oscillator.type = 'square';
+			} else {
+				// 探索音樂：使用三角波創造較柔和的音色
+				oscillator.type = 'triangle';
+			}
+			
 			oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
 			
 			// 設定音量包絡（ADSR）
 			const now = this.audioContext.currentTime;
-			const attackTime = 0.02;
-			const releaseTime = 0.1;
+			const attackTime = this.currentTrack === 'battle' ? 0.01 : 0.02; // 戰鬥音樂攻擊更快
+			const releaseTime = this.currentTrack === 'battle' ? 0.05 : 0.1; // 戰鬥音樂釋放更短
 			
 			gainNode.gain.setValueAtTime(0, now);
-			gainNode.gain.linearRampToValueAtTime(this.volume, now + attackTime);
-			gainNode.gain.setValueAtTime(this.volume, now + duration - releaseTime);
+			gainNode.gain.linearRampToValueAtTime(this.volume * 0.8, now + attackTime); // 戰鬥音量稍微降低避免刺耳
+			gainNode.gain.setValueAtTime(this.volume * 0.8, now + duration - releaseTime);
 			gainNode.gain.linearRampToValueAtTime(0, now + duration);
 			
 			oscillator.start(now);
@@ -1249,6 +1304,10 @@ function genEnemyName(type) {
 			showMessage(`${t('encounterEnemy')} ${type}，${t('enterBattle')}`);
 			// 設定戰鬥狀態與敵人屬性
 			this.inBattle = true;
+			// 切換到戰鬥音樂
+			if (typeof MusicSystem !== 'undefined') {
+				MusicSystem.switchTrack('battle');
+			}
 			// 儲存敵人類型（用於顯示對應圖片）
 			this.enemy.type = type;
 			// 產生敵人名稱
@@ -1308,6 +1367,10 @@ function genEnemyName(type) {
 			if (Math.random() < fleeChance) {
 				showMessage('你成功逃離戰鬥！');
 				this.inBattle = false;
+				// 切換回探索音樂
+				if (typeof MusicSystem !== 'undefined') {
+					MusicSystem.switchTrack('exploration');
+				}
 				spinBtn.disabled = true;
 				stopBtn.disabled = true;
 				// 停止自動旋轉並禁用自動旋轉按鈕
@@ -2672,6 +2735,10 @@ function genEnemyName(type) {
 						
 						// 設置戰鬥狀態為 false
 						this.inBattle = false;
+						// 切換回探索音樂
+						if (typeof MusicSystem !== 'undefined') {
+							MusicSystem.switchTrack('exploration');
+						}
 						
 						// 禁用戰鬥相關按鈕
 						spinBtn.disabled = true;
@@ -2712,6 +2779,10 @@ function genEnemyName(type) {
 				try { stopAutoSpinLoop(); } catch(e) {}
 				// 設置戰鬥狀態為 false
 				this.inBattle = false;
+				// 切換回探索音樂
+				if (typeof MusicSystem !== 'undefined') {
+					MusicSystem.switchTrack('exploration');
+				}
 				// 禁用按鈕
 				spinBtn.disabled = true;
 				stopBtn.disabled = true;
