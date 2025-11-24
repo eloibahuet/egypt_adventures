@@ -3206,14 +3206,19 @@ function startAutoSpinLoop() {
 	function addTouchClickEvent(element, callback) {
 		if (!element) return;
 		let touchHandled = false;
-		element.addEventListener('touchend', (e) => {
+		
+		// 使用 touchstart 而非 touchend 以提高響應速度
+		element.addEventListener('touchstart', (e) => {
 			e.preventDefault();
+			e.stopPropagation();
 			touchHandled = true;
 			callback();
 			setTimeout(() => { touchHandled = false; }, 300);
 		}, { passive: false });
+		
 		element.addEventListener('click', (e) => {
 			if (!touchHandled) {
+				e.preventDefault();
 				callback();
 			}
 		});
@@ -3284,10 +3289,13 @@ function startAutoSpinLoop() {
 	addTouchClickEvent(moveRight, ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('右'); });
 
 	// 裝備按鈕行為
-	const equipBtn = document.getElementById('equip-btn');
 	const closeEquip = document.getElementById('close-equip');
-	addTouchClickEvent(equipBtn, ()=> { game.showEquipmentPanel(); });
-	addTouchClickEvent(closeEquip, ()=> { const p = document.getElementById('equipment-panel'); if (p) p.style.display = 'none'; });
+	if (closeEquip) {
+		addTouchClickEvent(closeEquip, ()=> { 
+			const p = document.getElementById('equipment-panel'); 
+			if (p) p.style.display = 'none'; 
+		});
+	}
 
 		// 每次更新狀態後會在 updateStatus() 內綁定這些按鈕，但初始也綁一次保險
 		function bindStatusEquipButtons() {
@@ -3305,17 +3313,21 @@ function startAutoSpinLoop() {
 
 	// 自動旋轉與逃跑按鈕綁定
 	const autoBtn = document.getElementById('auto-spin-btn');
-	addTouchClickEvent(autoBtn, ()=>{
-		if (!game.inBattle) {
-			showMessage('目前不在戰鬥中，無法使用自動旋轉。');
-			return;
-		}
-		autoSpin = !autoSpin;
-		autoBtn.textContent = autoSpin ? '停止自動' : '自動旋轉';
-		if (autoSpin) startAutoSpinLoop(); else stopAutoSpinLoop();
-	});
+	if (autoBtn) {
+		addTouchClickEvent(autoBtn, ()=>{
+			if (!game.inBattle) {
+				showMessage('目前不在戰鬥中，無法使用自動旋轉。');
+				return;
+			}
+			autoSpin = !autoSpin;
+			autoBtn.textContent = autoSpin ? '停止自動' : '自動旋轉';
+			if (autoSpin) startAutoSpinLoop(); else stopAutoSpinLoop();
+		});
+	}
 	const fleeBtn = document.getElementById('flee-btn');
-	addTouchClickEvent(fleeBtn, ()=>{ game.attemptFlee(); });
+	if (fleeBtn) {
+		addTouchClickEvent(fleeBtn, ()=>{ game.attemptFlee(); });
+	}
 
 	// 音樂控制按鈕
 	const musicToggle = document.getElementById('music-toggle');
@@ -3348,7 +3360,8 @@ function startAutoSpinLoop() {
 	const saveBtn = document.getElementById('save-btn');
 	const loadBtn = document.getElementById('load-btn');
 
-	addTouchClickEvent(saveBtn, ()=>{
+	if (saveBtn) {
+		addTouchClickEvent(saveBtn, ()=>{
 		try {
 			const saveData = {
 				player: game.player,
@@ -3380,9 +3393,11 @@ function startAutoSpinLoop() {
 			showMessage('❌ 儲存失敗：' + e.message);
 			console.error('Save error:', e);
 		}
-	});
+		});
+	}
 
-	addTouchClickEvent(loadBtn, ()=>{
+	if (loadBtn) {
+		addTouchClickEvent(loadBtn, ()=>{
 		try {
 			const saveData = localStorage.getItem('egypt_adventures_save');
 			if (!saveData) {
@@ -3427,7 +3442,8 @@ function startAutoSpinLoop() {
 		} catch (e) {
 			showMessage('❌ 讀取失敗：' + e.message);
 		}
-	});
+		});
+	}
 
 	// 初始歡迎訊息已放在頁面上方（#welcome-panel），不重複顯示在訊息區。
 
