@@ -3084,10 +3084,10 @@ function startAutoSpinLoop() {
 					});						// 等待渲染完成後讀取符號
 						setTimeout(() => {
 							try {
-								// 使用畫面取樣來判定中間的符號
+								// 使用畫面取樣來判定中間的符號，讀取高亮框中心位置（top + 60px）
 								const rect = reels[index].getBoundingClientRect();
 								const cx = rect.left + rect.width / 2;
-								const cy = rect.top + rect.height / 2;
+								const cy = rect.top + 60; // 高亮框中心在 top + 60px
 								let el = document.elementFromPoint(cx, cy);
 								// 往上找父節點，直到找到 .symbol
 								while (el && !el.classList.contains('symbol')) {
@@ -3145,11 +3145,11 @@ function startAutoSpinLoop() {
 					setTimeout(() => {
 						strip.style.transition = '';
 						
-						// 從畫面讀取實際顯示的符號
+						// 從畫面讀取實際顯示的符號，讀取高亮框中心位置
 						try {
 							const rect = reels[index].getBoundingClientRect();
 							const cx = rect.left + rect.width / 2;
-							const cy = rect.top + rect.height / 2;
+							const cy = rect.top + 60; // 高亮框中心在 top + 60px
 							let el = document.elementFromPoint(cx, cy);
 							let attempts = 0;
 							while (el && !el.classList.contains('symbol') && attempts < 10) {
