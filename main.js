@@ -3234,9 +3234,62 @@ function startAutoSpinLoop() {
 			
 			return Promise.all([stopInstantly(1), stopInstantly(2)]);
 		}).then(()=> {
-			// 再次等待確保所有動畫完成
-			return new Promise(resolve => setTimeout(resolve, 100));
+			// 再次等待確保所有動畫完成和DOM更新
+			return new Promise(resolve => setTimeout(resolve, 200));
 		}).then(()=> {
+			// 從實際顯示位置讀取最終結果，確保顯示與判定一致
+			console.log('=== Reading slot results from actual display ===');
+			for (let i = 0; i < 3; i++) {
+				const strip = reels[i].querySelector('.strip');
+				if (!strip) {
+					results[i] = targetSymbols[i] || '⚔️';
+					console.log(`Reel ${i}: No strip found, using fallback ${results[i]}`);
+					continue;
+				}
+				
+				// 方法：直接檢查高亮框範圍內的符號元素
+				const symbolElements = strip.querySelectorAll('.symbol');
+				const reelRect = reels[i].getBoundingClientRect();
+				const highlightTop = 30; // 高亮框頂部位置
+				const highlightBottom = 90; // 高亮框底部位置（30 + 60）
+				
+				let foundSymbol = null;
+				
+				// 遍歷所有符號元素，找出在高亮框範圍內的
+				symbolElements.forEach((el, idx) => {
+					const elRect = el.getBoundingClientRect();
+					const relativeTop = elRect.top - reelRect.top;
+					const relativeBottom = relativeTop + el.offsetHeight;
+					
+					// 檢查符號是否在高亮框中央區域（允許±10px誤差）
+					if (relativeTop >= highlightTop - 10 && relativeTop <= highlightTop + 10) {
+						foundSymbol = el.textContent.trim();
+						console.log(`Reel ${i}: Found symbol at idx=${idx}, top=${relativeTop.toFixed(1)}px, symbol=${foundSymbol}`);
+					}
+				});
+				
+				// 如果找到了符號，使用它；否則使用預定目標
+				if (foundSymbol && SYMBOLS.includes(foundSymbol)) {
+					results[i] = foundSymbol;
+					console.log(`Reel ${i}: Using found symbol ${foundSymbol}`);
+				} else {
+					// 備用方案：從 translateY 計算
+					const transform = strip.style.transform;
+					const match = transform.match(/-?[\d.]+/);
+					const currentPos = match ? parseFloat(match[0]) : 0;
+					
+					const singleBlock = SYMBOLS.length * SYMBOL_HEIGHT;
+					const posInCycle = currentPos % singleBlock;
+					let symbolIndex = Math.round((posInCycle - 30) / SYMBOL_HEIGHT);
+					
+					if (symbolIndex < 0) symbolIndex += SYMBOLS.length;
+					symbolIndex = symbolIndex % SYMBOLS.length;
+					
+					results[i] = SYMBOLS[symbolIndex];
+					console.log(`Reel ${i}: Using calculated symbol from pos=${currentPos.toFixed(1)}px -> ${results[i]}`);
+				}
+			}
+			
 			// 確保結果陣列完整
 			console.log('Final results array:', results);
 			if (results.length !== 3 || results.some(r => !r)) {
