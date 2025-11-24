@@ -3290,6 +3290,11 @@ function startAutoSpinLoop() {
 	if (fleeBtn) {
 		fleeBtn.addEventListener('click', ()=>{ game.attemptFlee(); });
 	}
+	
+	const equipBtn = document.getElementById('equip-btn');
+	if (equipBtn) {
+		equipBtn.addEventListener('click', ()=>{ game.showEquipmentPanel(); });
+	}
 
 	// 音樂控制按鈕
 	const musicToggle = document.getElementById('music-toggle');
