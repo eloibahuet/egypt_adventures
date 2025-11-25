@@ -2125,9 +2125,9 @@ function genEnemyName(type) {
 					baseDmg += weaponAtk;
 					// µçëτö¿µ¡ªσÖ¿τÜäµÜ┤µôèτÄçσèáµêÉ
 					const weaponCritRate = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
-					const critChance = Math.min(0.5, 0.05 + 0.03 * this.player.luck_combat + weaponCritRate / 100); // Σ╕èΘÖÉ 50%
+					const critChance = Math.min(0.75, 0.08 + 0.05 * this.player.luck_combat + weaponCritRate / 100); // cap 75%, base 8%, per-luck 5%
 					let isCrit = Math.random() < critChance;
-					let finalDmg = isCrit ? Math.floor(baseDmg * 1.5) : baseDmg;
+					let finalDmg = isCrit ? Math.floor(baseDmg * 2.0) : baseDmg;
 					this.enemy.hp -= finalDmg;
 					showMessage(`Σ╜áτÖ╝σïòµÖ«ΘÇÜµö╗µôè x${matchCount}${isCrit? '∩╝êµÜ┤µôè∩╝ë':''}∩╝îσ░ìµò╡Σ║║ΘÇáµêÉ ${finalDmg} σé╖σ«│πÇé`);
 					break;
@@ -2145,9 +2145,9 @@ function genEnemyName(type) {
 					baseDmg = Math.floor(baseDmg * (1 + weaponSkillPower / 100));
 					// µçëτö¿µ¡ªσÖ¿τÜäµÜ┤µôèτÄçσèáµêÉ
 					const weaponCritRate2 = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
-					const critChance2 = Math.min(0.5, 0.04 + 0.03 * this.player.luck_combat + weaponCritRate2 / 100); // µèÇΦâ╜τòÑΣ╜Äσƒ║τñÄµÜ┤µôè
+					const critChance2 = Math.min(0.75, 0.08 + 0.05 * this.player.luck_combat + weaponCritRate2 / 100); // cap 75%, base 8%, per-luck 5%
 					let isCrit2 = Math.random() < critChance2;
-					let finalDmg2 = isCrit2 ? Math.floor(baseDmg * 1.6) : baseDmg;
+					let finalDmg2 = isCrit2 ? Math.floor(baseDmg * 2.2) : baseDmg;
 					this.enemy.hp -= finalDmg2;
 					// µèÇΦâ╜µ╢êΦÇùΘ½öσè¢
 					const staminaCost = 5 * matchCount;
