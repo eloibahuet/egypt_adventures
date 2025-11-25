@@ -16,7 +16,7 @@
                 <button id="toggle-debug" onclick="var panel = document.getElementById('mobile-debug'); panel.style.display = panel.style.display === 'none' ? 'block' : 'none';" style="background: #333; color: #0f0; border: 2px solid #0f0; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: monospace;">🐛 調試面板</button>
             </div>
             <!-- 手機調試面板 -->
-            <div id="mobile-debug" style="position: fixed; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.95); color: #0f0; padding: 10px; border-radius: 8px; font-size: 12px; font-family: monospace; max-height: 150px; overflow-y: auto; z-index: 9999; display: none; border: 2px solid #0f0; box-shadow: 0 4px 12px rgba(0,255,0,0.3);">
+            <div id="mobile-debug" style="position: fixed; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.95); color: #0f0; padding: 10px; border-radius: 8px; font-size: 12px; font-family: monospace; max-height: 150px; overflow-y: auto; z-index: 9999; display: block; pointer-events: none; border: 2px solid #0f0; box-shadow: 0 4px 12px rgba(0,255,0,0.3);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #0f0; padding-bottom: 4px;">
                     <strong>📱 調試訊息（點擊按鈕查看）</strong>
                     <button onclick="document.getElementById('mobile-debug').style.display='none'" style="background: #f00; color: white; border: none; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">✕</button>

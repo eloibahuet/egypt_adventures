@@ -1807,3 +1807,22 @@ button[disabled] {
     50% { box-shadow: 0 0 18px rgba(255,180,50,0.9); transform: scale(1.04); }
     100% { box-shadow: 0 0 6px rgba(255,180,50,0.35); transform: scale(1); }
 }
+
+/* Make mobile debug visible but non-intercepting: allow touches to pass
+   through the debug panel while keeping its internal control buttons clickable */
+#mobile-debug {
+    pointer-events: none !important;
+    z-index: 9999 !important;
+}
+#mobile-debug * {
+    pointer-events: none !important;
+}
+#mobile-debug button,
+#mobile-debug .debug-control,
+#mobile-debug .close-debug {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative;
+    z-index: 10000 !important;
+    touch-action: manipulation !important;
+}

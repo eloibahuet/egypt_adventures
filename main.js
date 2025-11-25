@@ -3237,14 +3237,40 @@ function startAutoSpinLoop() {
 			for (let i = 0; i < 3; i++) {
 				const strip = reels[i].querySelector('.strip');
 				if (strip) {
-					const transform = strip.style.transform;
-					const match = transform.match(/-?[\d.]+/);
-					const currentPos = match ? parseFloat(match[0]) : 0;
+					// 取得 transform 的實際計算值，支援 translateY(...)、matrix(...) 與 matrix3d(...)
+					const comp = window.getComputedStyle(strip).transform || strip.style.transform || '';
+					let currentPos = 0;
+					if (comp.startsWith('matrix3d')) {
+						// matrix3d(a1,...,a16) --> ty 在第 14 個位置（index 13）
+						const nums = comp.match(/matrix3d\(([^)]+)\)/);
+						if (nums && nums[1]) {
+							const vals = nums[1].split(',').map(s => parseFloat(s.trim()));
+							if (vals.length >= 14 && !isNaN(vals[13])) currentPos = Math.round(Math.abs(vals[13]));
+						}
+					} else if (comp.startsWith('matrix')) {
+						// matrix(a, b, c, d, tx, ty)
+						const nums = comp.match(/matrix\(([^)]+)\)/);
+						if (nums && nums[1]) {
+							const vals = nums[1].split(',').map(s => parseFloat(s.trim()));
+							if (vals.length >= 6 && !isNaN(vals[5])) currentPos = Math.round(Math.abs(vals[5]));
+						}
+					} else {
+						// 其他情況（如 translateY(-123px)），使用 regex 抽取數字
+						const m = comp.match(/-?[\d.]+/g);
+						if (m && m.length > 0) {
+							currentPos = parseFloat(m[m.length - 1]);
+							// translateY 用負值表示，上面邏輯期望正數
+							currentPos = Math.abs(currentPos);
+						} else {
+							currentPos = 0;
+						}
+					}
 					
 					// 計算符號在高亮框上方的位置
 					// 修正後：符號應該在 0-60px 區域（高亮框上方）
 					// strip 位置 = cycle × 420 + symbolIndex × 60 - 30
-					const symbolIndexInView = Math.round((currentPos + 30) / 60) % 7;
+					// 計算符號在高亮框上方的位置（允許一些誤差）
+					const symbolIndexInView = (Math.round((currentPos + 30) / 60) % SYMBOLS.length + SYMBOLS.length) % SYMBOLS.length;
 					const expectedSymbol = SYMBOLS[symbolIndexInView];
 					
 					console.log(`Reel ${i}: pos=${currentPos}px, symbolIndex=${symbolIndexInView}, expected=${expectedSymbol}, actual=${results[i]}`);
@@ -3252,7 +3278,8 @@ function startAutoSpinLoop() {
 					
 					// 檢查對齊（修正後的對齊位置）
 					const alignedPos = Math.round((currentPos + 30) / 60) * 60 - 30;
-					if (Math.abs(currentPos - alignedPos) > 1) {
+					// 在行動裝置上允許更大的容差（3px），以避免子像素或 matrix 計算誤差導致誤判
+					if (Math.abs(currentPos - alignedPos) > 3) {
 						console.warn(`Reel ${i}: Misaligned! Current=${currentPos}, should be=${alignedPos}`);
 						mobileDebug(`⚠️ 輪${i+1}未對齊: ${currentPos}px (應為${alignedPos}px)`, true);
 					}
@@ -3353,8 +3380,6 @@ function startAutoSpinLoop() {
 			const debugPanel = document.getElementById('mobile-debug');
 			const debugLog = document.getElementById('debug-log');
 			if (debugPanel && debugLog) {
-				// 確保面板可見
-				debugPanel.style.display = 'block';
 				
 				// 清除「等待操作...」提示
 				if (debugLog.textContent === '等待操作...') {
@@ -3378,11 +3403,7 @@ function startAutoSpinLoop() {
 			console.log(msg);
 		}
 		
-		// 啟動時顯示訊息
-		setTimeout(() => {
-			mobileDebug('🎮 遊戲已載入，調試面板已啟用');
-			mobileDebug('👆 點擊任何按鈕都會記錄在此');
-		}, 500);
+		// 預設不自動顯示面板（只有在使用者按下切換按鈕或除錯模式時才顯示）
 		
 		// 使用事件委派處理裝備按鈕，避免重複綁定
 		document.addEventListener('click', function(e) {
