@@ -656,11 +656,6 @@ button[disabled] {
 }
 #status-panel .stat { font-weight:700; }
 
-/* 獨立的裝備容器樣式 - 桃面版隱藏 */
-.equipment-box {
-    display: none;
-}
-
 /* 裝備標籤樣式 */
 .equip-label {
     display: block;
@@ -668,6 +663,8 @@ button[disabled] {
     margin-bottom: 2px;
     margin-top: 8px;
     font-size: 0.9em;
+    position: relative;
+    z-index: 50;
 }
 
 /* 裝備按鈕基礎樣式 */
@@ -717,11 +714,9 @@ button[disabled] {
     transition: all 0.2s ease;
 }
 
-/* 裝備容器和狀態框內的裝備按鈕樣式 */
-.equipment-box .open-equip-btn,
-.equipment-box .unequip-btn,
-.status-box-side .open-equip-btn,
-.status-box-side .unequip-btn {
+/* 狀態框內的裝備按鈕樣式 */
+.open-equip-btn,
+.unequip-btn {
     font-size: 0.85em;
     padding: 4px 10px;
     margin-left: 4px;
@@ -745,10 +740,8 @@ button[disabled] {
     z-index: 100 !important;
 }
 
-.equipment-box .open-equip-btn:hover,
-.equipment-box .unequip-btn:hover,
-.status-box-side .open-equip-btn:hover,
-.status-box-side .unequip-btn:hover {
+.open-equip-btn:hover,
+.unequip-btn:hover {
     background: #357abd;
 }
 
@@ -826,7 +819,14 @@ button[disabled] {
 .xp-text {
     color: #d4a02e;
 }
-.stats-row { display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.95em; }
+.stats-row { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+    font-size: 0.95em; 
+    position: relative;
+    z-index: 1;
+}
 
 /* 當畫面窄時轉成直列 */
 @media (max-width:800px) {
@@ -1109,36 +1109,6 @@ button[disabled] {
 
 /* ===== 手機響應式設計（最大 600px）===== */
 @media (max-width: 600px) {
-    /* 顯示獨立裝備容器 */
-    .equipment-box {
-        display: flex !important;
-        flex: 0 0 200px;
-        background: 
-            repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(139, 69, 19, 0.04) 3px, rgba(139, 69, 19, 0.04) 6px),
-            linear-gradient(180deg, #faf5eb 0%, #f5ead6 50%, #f0dfc8 100%);
-        border-radius: 0;
-        padding: 16px;
-        box-shadow: 
-            0 4px 12px rgba(101, 67, 33, 0.25),
-            0 0 0 2px #d4af37,
-            inset 0 2px 0 rgba(255, 248, 220, 0.6),
-            inset 0 -2px 0 rgba(139, 69, 19, 0.15);
-        flex-direction: column;
-        border: 3px solid #8b4513;
-        border-left: 5px solid #654321;
-        border-right: 5px solid #654321;
-        position: relative;
-        z-index: 10;
-        overflow: visible;
-    }
-    
-    /* 手機版隱藏 player-status 裡的裝備區塊 */
-    #player-status .equip-label,
-    #player-status .open-equip-btn,
-    #player-status .unequip-btn {
-        display: none !important;
-    }
-    
     /* 整體容器調整 */
     body {
         font-size: 14px;
@@ -1287,6 +1257,10 @@ button[disabled] {
         padding: 8px;
         order: 4;
         z-index: auto;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        justify-content: space-between;
     }
     
     /* 拉霸機區域移到最上方（原本在中間） */
@@ -1305,17 +1279,19 @@ button[disabled] {
     /* 角色資訊（原本在最前，現在移到第二位並靠左） */
     #player-status {
         order: 1;
-        flex: 0 0 calc(50% - 5px);
-        width: calc(50% - 5px) !important;
-        max-width: calc(50% - 5px) !important;
+        flex: 1 1 calc(50% - 3px);
+        width: calc(50% - 3px) !important;
+        max-width: calc(50% - 3px) !important;
+        min-width: 0;
     }
     
     /* 敵人資訊（原本在最後，現在與角色並列） */
     #enemy-status {
         order: 2;
-        flex: 0 0 calc(50% - 5px);
-        width: calc(50% - 5px) !important;
-        max-width: calc(50% - 5px) !important;
+        flex: 1 1 calc(50% - 3px);
+        width: calc(50% - 3px) !important;
+        max-width: calc(50% - 3px) !important;
+        min-width: 0;
     }
     
     /* 角色/敵人狀態框 - 並列顯示 */

@@ -1075,22 +1075,6 @@ function genEnemyName(type) {
 					<button class="open-equip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
 					<button class="unequip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
 				`;
-				
-				// 同步裝備資訊到獨立容器（手機版使用）
-				const equipContainer = document.getElementById('equipment-container');
-				if (equipContainer) {
-					equipContainer.innerHTML = `
-						<span class="equip-label">${currentLanguage === 'zh-TW' ? '武器' : currentLanguage === 'fr' ? 'Arme' : 'Weapon'}: ${this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
-						<button class="open-equip-btn" data-slot="weapon">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="weapon">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
-						<span class="equip-label">${currentLanguage === 'zh-TW' ? '防具' : currentLanguage === 'fr' ? 'Armure' : 'Armor'}: ${this.player.equipment.armor ? this.formatItem(this.player.equipment.armor) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
-						<button class="open-equip-btn" data-slot="armor">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="armor">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
-						<span class="equip-label">${currentLanguage === 'zh-TW' ? '護符' : currentLanguage === 'fr' ? 'Amulette' : 'Amulet'}: ${this.player.equipment.amulet ? this.formatItem(this.player.equipment.amulet) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
-						<button class="open-equip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
-					`;
-				}
 			}
 			
 			// 更新敵人狀態到右側面板
