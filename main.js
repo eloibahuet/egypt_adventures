@@ -2195,21 +2195,9 @@ function genEnemyName(type) {
 			const hpLoss = 10 + Math.floor(Math.random() * 15);
 			const staminaLoss = 15 + Math.floor(Math.random() * 15);
 			this.player.hp = Math.max(1, this.player.hp - hpLoss);
-			this.player.stamina = Math.max(0, this.player.stamina - staminaLoss);
-			showMessage(`${t('hp')} -${hpLoss}, ${t('stamina')} -${staminaLoss}`);
-		} else {
-			showMessage('💀 你陷入流沙深處，幾乎要窒息！');
-			const hpLoss = 25 + Math.floor(Math.random() * 25);
-			this.player.hp = Math.max(1, this.player.hp - hpLoss);
-			showMessage(`HP -${hpLoss}`);
-			if (this.player.potions > 0 && Math.random() < 0.5) {
-				this.player.potions -= 1;
-				showMessage('🧪 在掙扎中不小心打破了一瓶藥水（-1藥水）');
-			}
 		}
 	}
-
-	scorpionNest() {
+	scorpion() {
 		showMessage('🦂 你無意中闖入了毒蠍的巢穴！');
 		const outcomes = [
 			{ type: 'avoid', weight: 35 },
@@ -2282,30 +2270,16 @@ function genEnemyName(type) {
 			const damage = 15 + Math.floor(Math.random() * 25);
 			this.player.hp = Math.max(1, this.player.hp - damage);
 			showMessage(`受到 ${damage} 點傷害！`);
-		} else {
-			{ type: 'prophecy', weight: 20 },
-			{ type: 'curse', weight: 15 },
-			{ type: 'merchant', weight: 10 }
-		} else if (event === 'lost_merchant') {
-			this.lostMerchant();
-		} else if (event === 'cursed_shrine') {
-			this.cursedShrine();
-		} else if (event === 'bandit_ambush') {
-			this.banditAmbush();
-		} else if (event === 'ancient_puzzle') {
-			this.ancientPuzzle();
-		} else if (event === 'desert_oasis') {
-			this.desertOasis();
-		];
-		const total = outcomes.reduce((s, o) => s + o.weight, 0);
-		let r = Math.random() * total;
-		let result = null;
+		}
+		const total2 = outcomes.reduce((s, o) => s + o.weight, 0);
+		let r2 = Math.random() * total2;
+		let result2 = null;
 		for (const o of outcomes) {
-			r -= o.weight;
-			if (r <= 0) { result = o; break; }
+			r2 -= o.weight;
+			if (r2 <= 0) { result2 = o; break; }
 		}
 
-		if (result.type === 'gamble') {
+		if (result2.type === 'gamble') {
 			if (this.player.gold >= 100) {
 				showMessage(t('strangerGamble'));
 				if (Math.random() < 0.5) {
@@ -2319,7 +2293,7 @@ function genEnemyName(type) {
 				showMessage(t('strangerNoGold'));
 				showMessage(t('strangerLeaves'));
 			}
-		} else if (result.type === 'gift') {
+		} else if (result2.type === 'gift') {
 			const giftType = Math.random();
 			if (giftType < 0.4) {
 				const gold = 80 + Math.floor(Math.random() * 120);
@@ -2334,7 +2308,7 @@ function genEnemyName(type) {
 				this.player.inventory.push(newItem);
 				showMessage(`${t('strangerGiftItem')} ${this.formatItem(newItem)} ${t('strangerSmoke')}`);
 			}
-		} else if (result.type === 'prophecy') {
+		} else if (result2.type === 'prophecy') {
 			const mapMultiplier = Math.pow(2, this.difficulty - 1);
 			showMessage(t('strangerProphecy'));
 			const prophecies = [
@@ -2358,7 +2332,7 @@ function genEnemyName(type) {
 				this.player.shield += shieldValue;
 				showMessage(`${t('gainShield')} +${shieldValue}`);
 			}
-		} else if (result.type === 'curse') {
+		} else if (result2.type === 'curse') {
 			showMessage(t('strangerCurse'));
 			const curseType = Math.random();
 			if (curseType < 0.5) {
