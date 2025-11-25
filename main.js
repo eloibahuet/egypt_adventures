@@ -887,8 +887,10 @@ function genEnemyName(type) {
 				const attr = parts.length ? ` (${parts.join(' ')})` : '';
 				// 根據稀有度設定顏色
 				let color = '#333'; // 普通 common
-				if (it.rarity === 'rare') color = '#2ecc71'; // 精良 綠色
+				if (it.rarity === 'rare') color = '#3498db'; // 稀有 藍色
+				else if (it.rarity === 'excellent') color = '#2ecc71'; // 精良 綠色
 				else if (it.rarity === 'epic') color = '#9b59b6'; // 史詩 紫色
+				else if (it.rarity === 'legendary') color = '#e67e22'; // 傳說 橙色
 				
 				// 金字塔裝備顯示字綴
 				let displayName = it.name;
@@ -938,7 +940,11 @@ function genEnemyName(type) {
 				if (setBonus.effects.combo_rate) setParts.push(`${comboLabel}+${setBonus.effects.combo_rate}%`);
 				if (setBonus.effects.skill_power) setParts.push(`${skillLabel}+${setBonus.effects.skill_power}%`);
 				if (setBonus.effects.dodge_rate) setParts.push(`${dodgeLabel}+${setBonus.effects.dodge_rate}%`);
-				const rarityText = setBonus.rarity === 'rare' ? (currentLanguage === 'zh-TW' ? '精良' : currentLanguage === 'fr' ? 'Rare' : 'Rare') : setBonus.rarity === 'epic' ? (currentLanguage === 'zh-TW' ? '史詩' : currentLanguage === 'fr' ? 'Épique' : 'Epic') : '';
+				let rarityText = '';
+				if (setBonus.rarity === 'rare') rarityText = currentLanguage === 'zh-TW' ? '稀有' : currentLanguage === 'fr' ? 'Rare' : 'Rare';
+				else if (setBonus.rarity === 'excellent') rarityText = currentLanguage === 'zh-TW' ? '精良' : currentLanguage === 'fr' ? 'Excellent' : 'Excellent';
+				else if (setBonus.rarity === 'epic') rarityText = currentLanguage === 'zh-TW' ? '史詩' : currentLanguage === 'fr' ? 'Épique' : 'Epic';
+				else if (setBonus.rarity === 'legendary') rarityText = currentLanguage === 'zh-TW' ? '傳說' : currentLanguage === 'fr' ? 'Légendaire' : 'Legendary';
 				html += `<hr/><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 6px; color: white; margin: 8px 0;"><strong>⚡ ${t('setBonus')}: ${setBonus.name} (${rarityText})</strong><br/>${setParts.join(' ')}</div>`;
 			}
 			html += `<hr/><div><strong>${t('inventory')}</strong></div>`;
@@ -1074,7 +1080,11 @@ function genEnemyName(type) {
 				const setBonus = this.getActiveSetBonus();
 				let setBonusHtml = '';
 				if (setBonus) {
-					const rarityText = setBonus.rarity === 'rare' ? '精良' : setBonus.rarity === 'epic' ? '史詩' : '';
+					let rarityText = '';
+					if (setBonus.rarity === 'rare') rarityText = '稀有';
+					else if (setBonus.rarity === 'excellent') rarityText = '精良';
+					else if (setBonus.rarity === 'epic') rarityText = '史詩';
+					else if (setBonus.rarity === 'legendary') rarityText = '傳說';
 					setBonusHtml = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; margin: 4px 0;">⚡ ${setBonus.name} (${rarityText})</div>`;
 				}
 				
@@ -1652,7 +1662,7 @@ function genEnemyName(type) {
 				return;
 			}
 			// 產生 3 個隨機供品（由普通到史詩）
-			const rarityWeights = [{r:'common',w:60},{r:'rare',w:30},{r:'epic',w:10}];
+			const rarityWeights = [{r:'common',w:40},{r:'rare',w:30},{r:'excellent',w:20},{r:'epic',w:8},{r:'legendary',w:2}];
 			function pickRarity(){
 				let total = rarityWeights.reduce((s,i)=>s+i.w,0);
 				let r = Math.random()*total; let acc=0;
@@ -1662,12 +1672,13 @@ function genEnemyName(type) {
 			function cloneItem(base, rarity, isPyramid = false){
 				const it = Object.assign({}, base);
 				it.rarity = rarity;
-				// 調整屬性幅度：rare +~1.5, epic +~2.2
-				if (it.atk) it.atk = Math.max(1, Math.round(it.atk * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-				if (it.def) it.def = Math.max(1, Math.round(it.def * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-				if (it.luck_gold) it.luck_gold = Math.max(1, Math.round(it.luck_gold * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-				if (it.luck_combat) it.luck_combat = Math.max(1, Math.round(it.luck_combat * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
-				if (it.max_hp_bonus) it.max_hp_bonus = Math.max(1, Math.round(it.max_hp_bonus * (rarity==='rare'?1.5: (rarity==='epic'?2.2:1))));
+						// 調整屬性幅度：根據稀有度選擇倍率
+						const _scale = rarity === 'rare' ? 1.5 : (rarity === 'excellent' ? 1.8 : (rarity === 'epic' ? 2.2 : (rarity === 'legendary' ? 3.0 : 1)));
+						if (it.atk) it.atk = Math.max(1, Math.round(it.atk * _scale));
+						if (it.def) it.def = Math.max(1, Math.round(it.def * _scale));
+						if (it.luck_gold) it.luck_gold = Math.max(1, Math.round(it.luck_gold * _scale));
+						if (it.luck_combat) it.luck_combat = Math.max(1, Math.round(it.luck_combat * _scale));
+						if (it.max_hp_bonus) it.max_hp_bonus = Math.max(1, Math.round(it.max_hp_bonus * _scale));
 				
 				// 根據品質添加額外屬性
 				if (rarity !== 'common' && QUALITY_BONUS[it.slot] && QUALITY_BONUS[it.slot][rarity]) {
@@ -1850,12 +1861,17 @@ function genEnemyName(type) {
 		
 		if (result.type === 'equipment') {
 			const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-			const rarities = ['common', 'rare', 'epic'];
-			const rarityWeights = [60, 30, 10];
-			let rr = Math.random() * 100;
+			const rarities = ['common', 'rare', 'excellent', 'epic', 'legendary'];
+			const rarityWeights = [70, 20, 6, 3, 1];
+			// pick rarity by weights
+			let totalW = rarityWeights.reduce((s,w) => s + w, 0);
+			let rr = Math.random() * totalW;
+			let acc = 0;
 			let rarity = 'common';
-			if (rr < 10) rarity = 'epic';
-			else if (rr < 40) rarity = 'rare';
+			for (let i = 0; i < rarities.length; i++) {
+				acc += rarityWeights[i];
+				if (rr < acc) { rarity = rarities[i]; break; }
+			}
 			const newItem = Object.assign({}, item, { rarity });
 			this.player.inventory.push(newItem);
 			showMessage(`⚔️ 你在遺體旁找到了 ${this.formatItem(newItem)}！`);
@@ -2420,14 +2436,16 @@ function genEnemyName(type) {
 				// 計算出售價格：根據稀有度
 				let basePrice = 20;
 				if (item.rarity === 'rare') basePrice = 80;
+				else if (item.rarity === 'excellent') basePrice = 130;
 				else if (item.rarity === 'epic') basePrice = 200;
+				else if (item.rarity === 'legendary') basePrice = 500;
 				
 				// 根據屬性加成調整價格
 				if (item.atk) basePrice += item.atk * 5;
 				if (item.def) basePrice += item.def * 5;
 				if (item.max_hp_bonus) basePrice += item.max_hp_bonus * 2;
 				
-				const rarityColor = item.rarity === 'epic' ? '#9b59b6' : (item.rarity === 'rare' ? '#3498db' : '#95a5a6');
+				const rarityColor = item.rarity === 'legendary' ? '#e67e22' : (item.rarity === 'epic' ? '#9b59b6' : (item.rarity === 'excellent' ? '#2ecc71' : (item.rarity === 'rare' ? '#3498db' : '#95a5a6')));
 				
 				html += `
 					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; margin-bottom: 5px; border-left: 3px solid ${rarityColor};">
@@ -3872,7 +3890,7 @@ function startAutoSpinLoop() {
 
 	document.getElementById('debug-add-item').addEventListener('click', () => {
 		const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-		const rarities = ['common', 'rare', 'epic'];
+		const rarities = ['common', 'rare', 'excellent', 'epic', 'legendary'];
 		const rarity = rarities[Math.floor(Math.random() * rarities.length)];
 		const newItem = Object.assign({}, item, { rarity });
 		game.player.inventory.push(newItem);
