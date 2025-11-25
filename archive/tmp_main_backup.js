@@ -447,7 +447,7 @@ function genEnemyName(type) {
 				return;
 			}
 			// 產生 3 個隨機供品（由普通到史詩）
-			const rarityWeights = [{r:'common',w:60},{r:'rare',w:30},{r:'epic',w:10}];
+			const rarityWeights = [{r:'common',w:40},{r:'rare',w:30},{r:'excellent',w:20},{r:'epic',w:8},{r:'legendary',w:2}];
 			function pickRarity(){
 				let total = rarityWeights.reduce((s,i)=>s+i.w,0);
 				let r = Math.random()*total; let acc=0;

@@ -887,7 +887,10 @@ function genEnemyName(type) {
 				const attr = parts.length ? ` (${parts.join(' ')})` : '';
 				// 根據稀有度設定顏色
 				let color = '#333'; // 普通 common
-				if (it.rarity === 'rare') color = '#3498db'; // 稀有 藍色
+				if (it.rarity === 'legendary') color = '#e67e22';
+				else if (it.rarity === 'epic') color = '#9b59b6';
+				else if (it.rarity === 'excellent') color = '#2ecc71';
+				else if (it.rarity === 'rare') color = '#3498db'; // 稀有 藍色
 				else if (it.rarity === 'excellent') color = '#2ecc71'; // 精良 綠色
 				else if (it.rarity === 'epic') color = '#9b59b6'; // 史詩 紫色
 				else if (it.rarity === 'legendary') color = '#e67e22'; // 傳說 橙色
@@ -2918,45 +2921,36 @@ function genEnemyName(type) {
 								}
 							}
 						} else {
-							// 正常地圖掉落（精英和小頭目提高掉落率）
-							let dropChance = 50; // 基礎50%掉落率
-							let epicChance = 5;
-							let rareChance = 15;
-							
-							if (enemyTypeMultiplier === 3) { // mini_boss
-								dropChance = 100; // 100%掉落
-								epicChance = 40; // 40% 史詩
-								rareChance = 50; // 50% 稀有
-								// 小頭目掉落1-2件
+							// 正常地圖掉落（改用權重，支援 common/rare/excellent/epic/legendary）
+							const rarities = ['common','rare','excellent','epic','legendary'];
+							function pickWeightedRarity(weights) {
+								let total = weights.reduce((s,w)=>s+w,0);
+								let r = Math.random()*total; let acc = 0;
+								for (let i=0;i<weights.length;i++){ acc += weights[i]; if (r < acc) return rarities[i]; }
+								return 'common';
+							}
+
+							if (enemyTypeMultiplier === 3) { // mini_boss - 很高的稀有率
+								const weights = [10,50,10,25,5]; // common, rare, excellent, epic, legendary
 								const dropCount = 1 + Math.floor(Math.random() * 2);
 								showMessage(`💎 小頭目掉落 ${dropCount} 件裝備！`);
 								for (let i = 0; i < dropCount; i++) {
-									const roll = Math.random() * 100;
-									let rarity = 'common';
-									if (roll < epicChance) rarity = 'epic';
-									else if (roll < epicChance + rareChance) rarity = 'rare';
-									
+									const rarity = pickWeightedRarity(weights);
 									const baseItem = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 									dropped = cloneItem(baseItem, rarity);
 									this.player.inventory.push(dropped);
 									showMessage(`  獲得 ${this.formatItem(dropped)}`);
 								}
 							} else if (enemyTypeMultiplier === 2) { // elite
-								dropChance = 85; // 85%掉落
-								epicChance = 20; // 20% 史詩
-								rareChance = 40; // 40% 稀有
-								// 精英掉落1-2件
+								const weights = [15,40,15,20,10]; // 更好但不如小頭目
 								const dropCount = 1 + Math.floor(Math.random() * 2);
 								const dropRoll = Math.random() * 100;
+								const dropChance = 85;
 								console.log(`Elite drop check: roll=${dropRoll}, chance=${dropChance}, count=${dropCount}`);
 								if (dropRoll < dropChance) {
 									showMessage(`⚔️ 精英掉落 ${dropCount} 件裝備！`);
 									for (let i = 0; i < dropCount; i++) {
-										const roll = Math.random() * 100;
-										let rarity = 'common';
-										if (roll < epicChance) rarity = 'epic';
-										else if (roll < epicChance + rareChance) rarity = 'rare';
-										
+										const rarity = pickWeightedRarity(weights);
 										const baseItem = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 										dropped = cloneItem(baseItem, rarity);
 										this.player.inventory.push(dropped);
@@ -2968,18 +2962,11 @@ function genEnemyName(type) {
 								}
 							} else {
 								// 普通敵人掉落
-								const roll = Math.random() * 100;
-								let rarity = null;
-								if (roll < epicChance) {
-									rarity = 'epic';
-								} else if (roll < epicChance + rareChance) {
-									rarity = 'rare';
-								} else if (roll < dropChance) {
-									rarity = 'common';
-								}
-								if (rarity) {
+								const weights = [70,20,6,3,1];
+								const rollRarity = pickWeightedRarity(weights);
+								if (rollRarity !== 'common') {
 									const baseItem = ITEMS[Math.floor(Math.random()*ITEMS.length)];
-									dropped = cloneItem(baseItem, rarity);
+									dropped = cloneItem(baseItem, rollRarity);
 									this.player.inventory.push(dropped);
 									showMessage(`敵人掉落：${this.formatItem(dropped)}`);
 								}
