@@ -2492,6 +2492,98 @@ function genEnemyName(type) {
 	// Θí»τñ║σê¥σºïµû╣σÉæµÅÉτñ║
 	game.generateDirectionHints();
 
+	// 新增事件處理方法（附加到 Game.prototype）
+Game.prototype.lostMerchant = function() {
+	showMessage('你遇到了一位迷路的商人，他似乎丟失了一些貨物。');
+	const roll = Math.random();
+	if (roll < 0.45) {
+		const gold = 60 + Math.floor(Math.random() * 90);
+		this.player.gold += gold;
+		showMessage(`幫助商人取回貨品，商人感激地給你 ${gold} 金幣作為回報。`);
+	} else if (roll < 0.8) {
+		this.player.potions += 1;
+		showMessage('商人送你一瓶藥水作為謝禮。');
+	} else {
+		showMessage('商人希望與你交易：他願意用一件普通物品交換 120 金幣。');
+		if (this.player.inventory.length > 0 && this.player.gold < 120) {
+			const idx = Math.floor(Math.random() * this.player.inventory.length);
+			const it = this.player.inventory.splice(idx, 1)[0];
+			this.player.gold += 120;
+			showMessage(`你出售 ${it.name} 給商人，獲得 120 金幣。`);
+		} else {
+			showMessage('你覺得交易條件不划算，商人離開了。');
+		}
+	}
+	this.updateStatus();
+};
+
+Game.prototype.cursedShrine = function() {
+	showMessage('你發現了一座帶有詭異符文的祭壇。');
+	if (Math.random() < 0.6) {
+		const hpLoss = 10 + Math.floor(Math.random() * 20);
+		this.player.hp = Math.max(1, this.player.hp - hpLoss);
+		showMessage(`祭壇釋放詛咒，失去 ${hpLoss} 點 HP。`);
+		if (Math.random() < 0.4) {
+			this.player.luck_combat += 1;
+			showMessage('你找到方法削弱了詛咒，獲得 戰鬥幸運 +1 作為補償。');
+		}
+	} else {
+		const shieldGain = 20 + Math.floor(Math.random() * 30);
+		this.player.shield += shieldGain;
+		showMessage(`祭壇反而祝福了你：護盾 +${shieldGain}。`);
+	}
+	this.updateStatus();
+};
+
+Game.prototype.banditAmbush = function() {
+	showMessage('一群強盜突然跳出來攔截你！你被迫戰鬥或逃跑。');
+	if (Math.random() < 0.5) {
+		showMessage('你成功躲過一部分攻擊，但仍受些傷。');
+		const dmg = 8 + Math.floor(Math.random() * 12);
+		this.player.hp = Math.max(1, this.player.hp - dmg);
+		this.player.gold = Math.max(0, this.player.gold - 20);
+		showMessage(`HP -${dmg}，被搶走 20 金幣。`);
+	} else {
+		showMessage('你被迫進入戰鬥（立即觸發一場小型戰鬥）。');
+		this.battle('bandit');
+	}
+	this.updateStatus();
+};
+
+Game.prototype.ancientPuzzle = function() {
+	showMessage('你發現了一個古老的機關謎題。解開它可能有豐厚獎勵。');
+	const choice = Math.random();
+	if (choice < 0.5) {
+		const xp = 20 + Math.floor(Math.random() * 40);
+		this.addXP(xp);
+		showMessage(`你巧妙解開了謎題：獲得經驗值 +${xp}。`);
+	} else if (choice < 0.85) {
+		this.player.potions += 2;
+		showMessage('謎題吐出了一些補給：藥水 x2。');
+	} else {
+		const dmg = 12 + Math.floor(Math.random() * 18);
+		this.player.hp = Math.max(1, this.player.hp - dmg);
+		showMessage(`機關反噬：受到 ${dmg} 點傷害。`);
+	}
+	this.updateStatus();
+};
+
+Game.prototype.desertOasis = function() {
+	showMessage('你發現了一處綠洲，短暫休息可以恢復狀態或遇到旅人。');
+	if (Math.random() < 0.5) {
+		const hpGain = Math.floor(this.player.max_hp * 0.3);
+		const stamGain = Math.floor(this.player.max_stamina * 0.3);
+		this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
+		this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + stamGain);
+		showMessage(`短暫休息：HP +${hpGain}，體力 +${stamGain}。`);
+	} else {
+		const gold = 30 + Math.floor(Math.random() * 60);
+		this.player.gold += gold;
+		showMessage(`你在綠洲救助一名旅人，他感謝你並給予 ${gold} 金幣。`);
+	}
+	this.updateStatus();
+};
+
 	// µÄºσê╢µùïΦ╜ëτÜä interval
 	const reelState = reels.map(()=>({interval:null, spinning:false}));
 
