@@ -3055,6 +3055,8 @@ function genEnemyName(type) {
 			'沙塵暴來襲！',
 			choices,
 			(choiceId) => {
+				let needsDirectionHints = false;
+				
 				if (choiceId === 'enter_cave') {
 					const caveRoll = Math.random();
 					if (caveRoll < 0.5) {
@@ -3062,6 +3064,7 @@ function genEnemyName(type) {
 						this.player.hp = Math.min(this.player.max_hp, this.player.hp + 30);
 						this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 20);
 						showMessage('💤 趁機休息，恢復 30 HP 和 20 體力。');
+						needsDirectionHints = true;
 					} else if (caveRoll < 0.8) {
 						showMessage('👴 洞穴中住著一位隱士，他分享了食物和故事。');
 						this.player.hp = this.player.max_hp;
@@ -3073,6 +3076,7 @@ function genEnemyName(type) {
 							this.player.inventory.push(item);
 							showMessage(`🎁 隱士送給你一件禮物：${this.formatItem(item)}`);
 						}
+						needsDirectionHints = true;
 					} else {
 						showMessage('🐺 洞穴是野獸的巢穴！你必須戰鬥！');
 						this.battle('elite');
@@ -3098,6 +3102,7 @@ function genEnemyName(type) {
 						showMessage('🌪️ 廢墟很穩固，你安全地躲過了沙塵暴。');
 						showMessage('但廢墟中沒有找到任何有價值的東西。');
 					}
+					needsDirectionHints = true;
 				} else if (choiceId === 'brave_storm') {
 					showMessage('💪 你決定勇敢面對沙塵暴！');
 					const stormDamage = 20 + Math.floor(Math.random() * 20);
@@ -3111,8 +3116,13 @@ function genEnemyName(type) {
 					}
 					this.map_steps += 1;
 					showMessage(`🏃 你成功穿越了沙塵暴區域，地圖進度額外 +1（${this.map_steps}/${this.map_goal}）！`);
+					needsDirectionHints = true;
 				}
-				this.updateStatus();
+				
+				if (needsDirectionHints) {
+					this.updateStatus();
+					this.generateDirectionHints();
+				}
 			}
 		);
 	}
@@ -3247,18 +3257,17 @@ function genEnemyName(type) {
 						this.player.hp = Math.max(1, this.player.hp - damage);
 						showMessage(`💥 魔法能量爆發，你受到 ${damage} 點傷害！`);
 					}
-				} else if (choiceId === 'ignore') {
-					showMessage('🚶 你決定不理會石碑，繼續你的旅程。');
-					showMessage('安全第一總是沒錯的。');
-					this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 10);
-					showMessage('體力恢復 10 點。');
-				}
-				this.updateStatus();
-			}
-		);
-	}
-
-	beastPack() {
+                } else if (choiceId === 'ignore') {
+                    showMessage('🚶 你決定不理會石碑，繼續你的旅程。');
+                    showMessage('安全第一總是沒錯的。');
+                    this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + 10);
+                    showMessage('體力恢復 10 點。');
+                }
+                this.updateStatus();
+                this.generateDirectionHints();
+            }
+        );
+    }	beastPack() {
 		showMessage('🐺 你遭遇了一群沙漠野獸！');
 		const choices = [
 			{ id: 'fight', label: '迎戰（正面戰鬥）', weight: 35 },
@@ -3393,6 +3402,8 @@ function genEnemyName(type) {
 						const gold = 80 + Math.floor(Math.random() * 120);
 						this.player.gold += gold;
 						showMessage(`💰 你獲得了 ${gold} 金幣和 ${this.formatItem(item)}！`);
+						this.updateStatus();
+						this.generateDirectionHints();
 					} else if (takeRoll < 0.6) {
 						showMessage('⚠️ 祭壇的守護魔法觸發了！');
 						const item = this.generateItem('rare');
@@ -3402,12 +3413,17 @@ function genEnemyName(type) {
 						this.player.hp = Math.max(1, this.player.hp - curse);
 						this.player.max_hp = Math.max(50, this.player.max_hp - 10);
 						showMessage(`😈 但受到詛咒！損失 ${curse} HP 和 10 最大HP！`);
+						this.updateStatus();
+						this.generateDirectionHints();
 					} else {
 						showMessage('👹 祭壇的守護者被喚醒了！');
 						this.battle('mini_boss');
 					}
+					return;
 				}
+				// pray 和 offer_gold 都需要生成方向提示
 				this.updateStatus();
+				this.generateDirectionHints();
 			}
 		);
 	}
