@@ -2565,7 +2565,7 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			</div>
 			
 			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
-				<h3 style="margin: 0 0 8px 0; color: #e74c3c; font-size: 1em;">💼 出售裝備</h3>
+				<h3 style="margin: 0 0 8px 0; color: #e74c3c; font-size: 1em;">💼 裝備管理</h3>
 				<div id="tp-inventory" style="max-height: 180px; overflow-y: auto;">
 					<!-- 裝備列表將動態生成 -->
 				</div>
@@ -2582,37 +2582,58 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 		const updateInventory = () => {
 			const invDiv = document.getElementById('tp-inventory');
 			if (!invDiv) return;
-			
-			if (this.player.inventory.length === 0) {
+
+			// 建立包含已裝備和背包物品的完整列表
+			const equippedSlots = ['weapon', 'armor', 'amulet'];
+			const equippedItems = [];
+			equippedSlots.forEach(slot => {
+				if (this.player.equipment[slot]) {
+					equippedItems.push({ item: this.player.equipment[slot], slot: slot, isEquipped: true });
+				}
+			});
+
+			const inventoryItems = this.player.inventory.map((item, idx) => ({ item, idx, isEquipped: false }));
+			const allItems = [...equippedItems, ...inventoryItems];
+
+			if (allItems.length === 0) {
 				invDiv.innerHTML = `<div style="text-align: center; color: #999; padding: 20px;">${t('inventoryEmpty')}</div>`;
 				return;
 			}
-			
+
 			let html = '';
-			this.player.inventory.forEach((item, idx) => {
+			allItems.forEach((entry) => {
+				const item = entry.item;
+				const isEquipped = entry.isEquipped;
+
 				// 計算出售價格：根據稀有度
 				let basePrice = 20;
 				if (item.rarity === 'rare') basePrice = 80;
 				else if (item.rarity === 'excellent') basePrice = 130;
 				else if (item.rarity === 'epic') basePrice = 200;
 				else if (item.rarity === 'legendary') basePrice = 500;
-				
+
 				// 根據屬性加成調整價格
 				if (item.atk) basePrice += item.atk * 5;
 				if (item.def) basePrice += item.def * 5;
 				if (item.max_hp_bonus) basePrice += item.max_hp_bonus * 2;
-				
+
 				const rarityColor = item.rarity === 'legendary' ? '#e67e22' : (item.rarity === 'epic' ? '#9b59b6' : (item.rarity === 'excellent' ? '#2ecc71' : (item.rarity === 'rare' ? '#3498db' : '#95a5a6')));
-				
+
+				// 裝備指示器
+				const equippedBadge = isEquipped ? `<span style="background: #27ae60; color: white; padding: 1px 5px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">${t('equipped')}</span>` : '';
+
+				// 資料屬性：已裝備用 slot，背包用 idx
+				const dataAttr = isEquipped ? `data-slot="${entry.slot}"` : `data-idx="${entry.idx}"`;
+
 				html += `
-					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; margin-bottom: 5px; border-left: 3px solid ${rarityColor};">
+					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: ${isEquipped ? '#e8f6e8' : '#f8f8f8'}; border-radius: 4px; margin-bottom: 5px; border-left: 3px solid ${rarityColor};">
 						<div style="flex: 1; min-width: 0;">
-							<div style="font-weight: bold; font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}${item.enhanceLevel ? ' +' + item.enhanceLevel : ''}</div>
+							<div style="font-weight: bold; font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}${item.enhanceLevel ? ' +' + item.enhanceLevel : ''}${equippedBadge}</div>
 							<div style="font-size: 0.75em; color: #666;">${item.rarity}${item.isPyramid ? ' 🔺' : ''}</div>
 						</div>
 						<div style="display:flex; gap:6px; align-items:center;">
-							<button class="tp-enhance-btn" data-idx="${idx}" style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">強化</button>
-							<button class="tp-sell-btn" data-idx="${idx}" data-price="${basePrice}" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">賣出 ${basePrice}金</button>
+							<button class="tp-enhance-btn" ${dataAttr} style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">強化</button>
+							${isEquipped ? '' : `<button class="tp-sell-btn" data-idx="${entry.idx}" data-price="${basePrice}" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">賣出 ${basePrice}金</button>`}
 						</div>
 					</div>
 				`;
@@ -2640,8 +2661,15 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			// 綁定強化按鈕
 			Array.from(invDiv.querySelectorAll('.tp-enhance-btn')).forEach(btn => {
 				btn.addEventListener('click', () => {
-					const idx = parseInt(btn.getAttribute('data-idx'));
-					const item = this.player.inventory[idx];
+					// 支援已裝備物品（data-slot）和背包物品（data-idx）
+					const slot = btn.getAttribute('data-slot');
+					const idx = btn.getAttribute('data-idx');
+					let item;
+					if (slot) {
+						item = this.player.equipment[slot];
+					} else {
+						item = this.player.inventory[parseInt(idx)];
+					}
 					if (!item) return;
 					// 設定基礎屬性以便回復/重新計算
 					if (typeof item._enhance_base_atk === 'undefined') item._enhance_base_atk = item.atk || 0;
@@ -3592,8 +3620,90 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 		showMessage('金字塔副本：8步探險，敵人強度極高（隨地圖提升），獎勵豐厚（15倍經驗/金幣），保證掉落優良以上裝備！');
 		// 創建選擇面板
 		this.showPyramidChoice();
-	}		showPyramidChoice() {
-			// 禁用移動按鈕
+	}
+
+	showChoicePanel(title, choices, callback) {
+		// 禁用移動按鈕
+		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
+		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
+		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+
+		// 創建選擇對話框
+		const panel = document.createElement('div');
+		panel.id = 'encounter-choice-panel';
+		panel.style.cssText = `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: linear-gradient(180deg, #fff9e6, #ffe4b3);
+			border: 3px solid #d4a855;
+			border-radius: 12px;
+			padding: 24px;
+			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+			z-index: 100;
+			min-width: 320px;
+			max-width: 90vw;
+			text-align: center;
+		`;
+
+		// 生成選項按鈕 HTML
+		const choicesHtml = choices.map(choice => `
+			<button class="choice-btn" data-choice-id="${choice.id}" style="
+				display: block;
+				width: 100%;
+				padding: 12px 16px;
+				margin: 8px 0;
+				font-size: 1em;
+				background: linear-gradient(180deg, #f5f5f5, #e0e0e0);
+				color: #333;
+				border: 2px solid #d4a855;
+				border-radius: 6px;
+				cursor: pointer;
+				transition: all 0.2s;
+			">${choice.label}</button>
+		`).join('');
+
+		panel.innerHTML = `
+			<h2 style="color: #8b4513; margin-top: 0; margin-bottom: 16px;">🏜️ ${title}</h2>
+			<div style="text-align: left;">
+				${choicesHtml}
+			</div>
+		`;
+
+		document.body.appendChild(panel);
+
+		// 綁定選項按鈕事件
+		const choiceBtns = panel.querySelectorAll('.choice-btn');
+		choiceBtns.forEach(btn => {
+			btn.addEventListener('mouseenter', () => {
+				btn.style.background = 'linear-gradient(180deg, #e8b44c, #d4a02e)';
+				btn.style.color = 'white';
+			});
+			btn.addEventListener('mouseleave', () => {
+				btn.style.background = 'linear-gradient(180deg, #f5f5f5, #e0e0e0)';
+				btn.style.color = '#333';
+			});
+			btn.addEventListener('click', () => {
+				const choiceId = btn.getAttribute('data-choice-id');
+				// 移除面板
+				if (panel.parentNode) {
+					panel.parentNode.removeChild(panel);
+				}
+				// 恢復移動按鈕
+				if (mf) mf.disabled = false;
+				if (ml) ml.disabled = false;
+				if (mr) mr.disabled = false;
+				// 執行回調
+				if (callback) {
+					callback(choiceId);
+				}
+			});
+		});
+	}
+
+	showPyramidChoice() {
+		// 禁用移動按鈕
 			const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
 			const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
 			const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
