@@ -1750,6 +1750,7 @@ button[disabled] {
         padding: 5px;
         font-size: 0.72em;
         min-height: 95px;
+        overflow: visible !important;
     }
     
     .status-box-side .stat-label {

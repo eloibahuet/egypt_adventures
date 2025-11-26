@@ -1157,19 +1157,17 @@ function genEnemyName(type) {
 				const attackCountdown = currentLanguage === 'zh-TW' ? '攻擊倒數' : currentLanguage === 'fr' ? 'Attaque dans' : 'Attack in';
 				const strength = currentLanguage === 'zh-TW' ? '強度' : currentLanguage === 'fr' ? 'Force' : 'Strength';
 				
-				// 根據敵人類型選擇對應圖片
-				let enemyImage = '';
-				if (this.inBattle && this.enemy.type) {
-					if (this.enemy.type === 'monster') {
-						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m1.png" alt="普通敵人" style="width: 150px; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-					} else if (this.enemy.type === 'elite') {
-						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m3.png" alt="菁英敵人" style="width: 150px; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-					} else if (this.enemy.type === 'mini_boss') {
-						enemyImage = '<div style="text-align: center; margin-top: 10px;"><img src="m4.png" alt="小頭目" style="width: 150px; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-					}
-				}
-				
-				enemyStatusEl.innerHTML = `
+                // 根據敵人類型選擇對應圖片
+                let enemyImage = '';
+                if (this.inBattle && this.enemy.type) {
+                    if (this.enemy.type === 'monster') {
+                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="m1.png" alt="普通敵人" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
+                    } else if (this.enemy.type === 'elite') {
+                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="m3.png" alt="菁英敵人" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
+                    } else if (this.enemy.type === 'mini_boss') {
+                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="m4.png" alt="小頭目" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
+                    }
+                }				enemyStatusEl.innerHTML = `
 					<div class="stat-label">${enemyLabel}</div>
 					${this.inBattle ? `
 						<div class="hp-row">${this.enemy.name || enemyLabel}  ${t('hp')}: <span class="hp-text">${this.enemy.hp}/${this.enemy.max_hp}</span></div>
