@@ -1435,27 +1435,27 @@ function genEnemyName(type) {
 		// 處理主事件
 		this.handleEvent(eventPath.main);
 		
-		// 處理支線事件
-		if (eventPath.branches && eventPath.branches.length > 0) {
-			this.handleBranchEvents(eventPath.branches);
-		}
-			
-			// 檢查是否完成金字塔或正常地圖
-			if (this.inPyramid && this.pyramidSteps >= this.pyramidMaxSteps) {
-				this.exitPyramid();
-			} else if (!this.inPyramid && this.map_steps >= this.map_goal) {
-				this.nextMap();
-			}
-			
-			this.updateStatus();
-			
-			// 如果不是戰鬥事件且不在商店中，立即生成下一組方向提示
-			if (!this.inBattle && !this.inShop) {
-				this.generateDirectionHints();
-			}
-		}
-
-		// 處理支線事件
+        // 處理支線事件
+        if (eventPath.branches && eventPath.branches.length > 0) {
+            this.handleBranchEvents(eventPath.branches);
+        }
+            
+            // 檢查是否完成金字塔或正常地圖（僅在非戰鬥狀態下執行，避免最後一步遇到敵人時提前離開）
+            if (!this.inBattle) {
+                if (this.inPyramid && this.pyramidSteps >= this.pyramidMaxSteps) {
+                    this.exitPyramid();
+                } else if (!this.inPyramid && this.map_steps >= this.map_goal) {
+                    this.nextMap();
+                }
+            }
+            
+            this.updateStatus();
+            
+            // 如果不是戰鬥事件且不在商店中，立即生成下一組方向提示
+            if (!this.inBattle && !this.inShop) {
+                this.generateDirectionHints();
+            }
+        }		// 處理支線事件
 		handleBranchEvents(branches) {
 			branches.forEach(branch => {
 				switch(branch) {
@@ -3976,19 +3976,24 @@ function genEnemyName(type) {
 							autoBtn.style.background = ''; // 重置背景色
 						}
 						
-						// 啟用移動按鈕
-						const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
-						const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
-						const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
-						
-						this.enemy.turnsToAttack = 3;
-						
-						// 戰鬥結束後生成新的方向提示
-						this.generateDirectionHints();
-					}
-				}
-
-		// 檢查敵人或玩家死亡
+                    // 啟用移動按鈕
+                    const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
+                    const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
+                    const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
+                    
+                    this.enemy.turnsToAttack = 3;
+                    
+                    // 戰鬥結束後檢查是否達到金字塔或地圖目標
+                    if (this.inPyramid && this.pyramidSteps >= this.pyramidMaxSteps) {
+                        this.exitPyramid();
+                    } else if (!this.inPyramid && this.map_steps >= this.map_goal) {
+                        this.nextMap();
+                    } else {
+                        // 只有在未離開金字塔/地圖時才生成方向提示
+                        this.generateDirectionHints();
+                    }
+                }
+            }		// 檢查敵人或玩家死亡
 		// 已在戰鬥流程中處理敵人死亡與獎勵
 		// 若玩家 HP 歸零，嘗試使用背包藥水復活；若無藥水則死亡
 		if (this.player.hp <= 0) {
