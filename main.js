@@ -1147,7 +1147,7 @@ function genEnemyName(type) {
 				const enemyPct = this.enemy && this.enemy.max_hp ? Math.max(0, Math.min(100, Math.floor((this.enemy.hp / this.enemy.max_hp) * 100))) : 0;
 				const enemyLabel = currentLanguage === 'zh-TW' ? '敵人' : currentLanguage === 'fr' ? 'Ennemi' : 'Enemy';
 				const noneLabel = currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None';
-				const attackCountdown = currentLanguage === 'zh-TW' ? '普攻倒數' : currentLanguage === 'fr' ? 'Attaque dans' : 'Attack in';
+				const attackCountdown = currentLanguage === 'zh-TW' ? '攻擊倒數' : currentLanguage === 'fr' ? 'Attaque dans' : 'Attack in';
 				const strength = currentLanguage === 'zh-TW' ? '強度' : currentLanguage === 'fr' ? 'Force' : 'Strength';
 				
 				// 根據敵人類型選擇對應圖片
