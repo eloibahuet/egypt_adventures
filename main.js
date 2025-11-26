@@ -3141,6 +3141,8 @@ function genEnemyName(type) {
 						this.player.potions += buyCount;
 						showMessage(`🧪 你花費 ${totalCost} 金幣購買了 ${buyCount} 瓶高品質藥水！`);
 					}
+					this.updateStatus();
+					this.generateDirectionHints();
 				} else if (choiceId === 'trade_gold') {
 					const elixirCost = 150;
 					if (this.player.gold < elixirCost) {
@@ -3162,6 +3164,8 @@ function genEnemyName(type) {
 							showMessage('🍀 你獲得了幸運藥劑！戰鬥幸運 +3，金幣幸運 +2！');
 						}
 					}
+					this.updateStatus();
+					this.generateDirectionHints();
 				} else if (choiceId === 'learn_alchemy') {
 					showMessage('📚 煉金術師開始教導你煉金的奧秘...');
 					const xp = 70 + Math.floor(Math.random() * 50);
@@ -3176,8 +3180,9 @@ function genEnemyName(type) {
 						this.player.potions += 2;
 						showMessage('📖 你的煉金知識更加精進，獲得 2 瓶藥水！');
 					}
+					this.updateStatus();
+					this.generateDirectionHints();
 				}
-				this.updateStatus();
 			}
 		);
 	}
