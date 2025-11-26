@@ -892,6 +892,10 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			// 金字塔副本相關狀態
 			this.inPyramid = false;
 			this.pyramidSteps = 0;
+			// 離開金字塔自動產生方向導引
+			if (typeof this.generateDirectionHints === 'function') {
+				this.generateDirectionHints();
+			}
 			this.pyramidMaxSteps = 8;
 			this.normalMapSteps = 0; // 儲存進入金字塔前的步數
 			// 驛站追蹤：確保每張地圖至少出現一次
