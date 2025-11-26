@@ -3758,18 +3758,21 @@ function genEnemyName(type) {
 					break;
 				}
 				case '🧪': {
-					let hpGain = 30 * matchCount; // 每格 +30 HP
+					// 藥水效果隨地圖難度遞增：基礎值 + (難度 * 10)
+					const baseHpPerSymbol = 90 + (this.difficulty * 10); // 地圖1: 100, 地圖2: 110, 地圖3: 120...
+					let hpGain = baseHpPerSymbol * matchCount;
 					// 套用三連加成
 					hpGain = Math.round(hpGain * tripleBonus);
 					hpGain = Math.max(1, Math.round(hpGain * comboMultiplier));
 					this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
-					// 同時恢復體力（每格 +15 體力）
-					let staminaGain = 15 * matchCount;
+					// 同時恢復體力（每格 +30 體力，也隨難度遞增）
+					const baseStaminaPerSymbol = 30 + (this.difficulty * 8); // 地圖1: 38, 地圖2: 46, 地圖3: 54...
+					let staminaGain = baseStaminaPerSymbol * matchCount;
 					// 套用三連加成
 					staminaGain = Math.round(staminaGain * tripleBonus);
 					staminaGain = Math.max(1, Math.round(staminaGain * comboMultiplier));
 					this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
-					showMessage(`使用紅色水瓶 x${matchCount}（連擊 x${effectiveCombo}），回復 HP ${hpGain}、體力 ${staminaGain}。`);
+					showMessage(`使用紅色水瓶 x${matchCount}（連擊 x${effectiveCombo}，地圖${this.difficulty}），回復 HP ${hpGain}、體力 ${staminaGain}。`);
 					break;
 				}
 				case '⭐': {
