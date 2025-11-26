@@ -3620,8 +3620,90 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 		showMessage('金字塔副本：8步探險，敵人強度極高（隨地圖提升），獎勵豐厚（15倍經驗/金幣），保證掉落優良以上裝備！');
 		// 創建選擇面板
 		this.showPyramidChoice();
-	}		showPyramidChoice() {
-			// 禁用移動按鈕
+	}
+
+	showChoicePanel(title, choices, callback) {
+		// 禁用移動按鈕
+		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
+		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
+		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+
+		// 創建選擇對話框
+		const panel = document.createElement('div');
+		panel.id = 'encounter-choice-panel';
+		panel.style.cssText = `
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: linear-gradient(180deg, #fff9e6, #ffe4b3);
+			border: 3px solid #d4a855;
+			border-radius: 12px;
+			padding: 24px;
+			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+			z-index: 100;
+			min-width: 320px;
+			max-width: 90vw;
+			text-align: center;
+		`;
+
+		// 生成選項按鈕 HTML
+		const choicesHtml = choices.map(choice => `
+			<button class="choice-btn" data-choice-id="${choice.id}" style="
+				display: block;
+				width: 100%;
+				padding: 12px 16px;
+				margin: 8px 0;
+				font-size: 1em;
+				background: linear-gradient(180deg, #f5f5f5, #e0e0e0);
+				color: #333;
+				border: 2px solid #d4a855;
+				border-radius: 6px;
+				cursor: pointer;
+				transition: all 0.2s;
+			">${choice.label}</button>
+		`).join('');
+
+		panel.innerHTML = `
+			<h2 style="color: #8b4513; margin-top: 0; margin-bottom: 16px;">🏜️ ${title}</h2>
+			<div style="text-align: left;">
+				${choicesHtml}
+			</div>
+		`;
+
+		document.body.appendChild(panel);
+
+		// 綁定選項按鈕事件
+		const choiceBtns = panel.querySelectorAll('.choice-btn');
+		choiceBtns.forEach(btn => {
+			btn.addEventListener('mouseenter', () => {
+				btn.style.background = 'linear-gradient(180deg, #e8b44c, #d4a02e)';
+				btn.style.color = 'white';
+			});
+			btn.addEventListener('mouseleave', () => {
+				btn.style.background = 'linear-gradient(180deg, #f5f5f5, #e0e0e0)';
+				btn.style.color = '#333';
+			});
+			btn.addEventListener('click', () => {
+				const choiceId = btn.getAttribute('data-choice-id');
+				// 移除面板
+				if (panel.parentNode) {
+					panel.parentNode.removeChild(panel);
+				}
+				// 恢復移動按鈕
+				if (mf) mf.disabled = false;
+				if (ml) ml.disabled = false;
+				if (mr) mr.disabled = false;
+				// 執行回調
+				if (callback) {
+					callback(choiceId);
+				}
+			});
+		});
+	}
+
+	showPyramidChoice() {
+		// 禁用移動按鈕
 			const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
 			const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
 			const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
