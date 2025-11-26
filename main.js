@@ -2242,86 +2242,8 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 	}
 
 	caravanRest() {
-		this.inShop = true; // 標記進入驛站
-		showMessage('🐪 你遇到了一支商隊正在休息...');
-		// 停用移動按鈕
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
-		
-		const outcomes = [
-			{ type: 'trade', weight: 40 },
-			{ type: 'gift', weight: 30 },
-			{ type: 'info', weight: 20 },
-			{ type: 'ambush', weight: 10 }
-		];
-		const total = outcomes.reduce((s, o) => s + o.weight, 0);
-		let r = Math.random() * total;
-		let result = null;
-		for (const o of outcomes) {
-			r -= o.weight;
-			if (r <= 0) { result = o; break; }
-		}
-
-		if (result.type === 'trade') {
-			if (this.player.gold >= 60) {
-				const choice = Math.random();
-				if (choice < 0.5) {
-					this.player.gold -= 60;
-					this.player.potions += 2;
-					showMessage('🧪 你向商隊購買了2瓶藥水（花費60金幣）');
-				} else {
-					this.player.gold -= 60;
-					this.player.hp = this.player.max_hp;
-					this.player.stamina = this.player.max_stamina;
-					showMessage(t('caravanBuyFood'));
-				}
-			} else {
-				showMessage('商隊願意交易，但你的金幣不足（需要60金幣）。');
-			}
-		} else if (result.type === 'gift') {
-			const gifts = [
-				{ type: 'gold', value: 50 },
-				{ type: 'potion', value: 1 },
-				{ type: 'food', hp: 30, stamina: 15 }
-			];
-			const gift = gifts[Math.floor(Math.random() * gifts.length)];
-			
-			if (gift.type === 'gold') {
-				this.player.gold += gift.value;
-				showMessage(`💰 商隊隊長贈送你一些金幣（+${gift.value}）以答謝你的到來。`);
-			} else if (gift.type === 'potion') {
-				this.player.potions += gift.value;
-				showMessage('🧪 商隊贈送你一瓶藥水以表善意。');
-			} else if (gift.type === 'food') {
-				const mapMultiplier = Math.pow(2, this.difficulty - 1);
-				const hpGain = Math.floor(gift.hp * mapMultiplier);
-				const staminaGain = Math.floor(gift.stamina * mapMultiplier);
-				this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
-				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
-				showMessage(`${t('caravanGift')} HP +${hpGain}, ${t('stamina')} +${staminaGain}`);
-			}
-		} else if (result.type === 'info') {
-			const mapMultiplier = Math.pow(2, this.difficulty - 1); // 第1章x1, 第2章x2, 第3章x4...
-			const xp = Math.floor((20 + Math.floor(Math.random() * 30)) * mapMultiplier);
-			this.addXP(xp);
-			showMessage(`📜 商隊分享了沙漠中的生存經驗和地圖情報。獲得 ${xp} 經驗值。`);
-		} else {
-			showMessage('⚔️ 這是一群偽裝的盜賊！');
-			this.inShop = false; // 遇到戰鬥，清除商店標記
-			this.battle('monster');
-			return; // 戰鬥時不恢復移動按鈕
-		}
-		
-		// 非戰鬥結果：延遲後恢復移動並生成方向提示
-		setTimeout(() => {
-			this.inShop = false;
-			showMessage('商隊繼續他們的旅程，你也該上路了。');
-			const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
-			const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
-			const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
-			this.generateDirectionHints();
-		}, 2000);
+		// 直接調用完整的驛站功能（含裝備強化）
+		this.tradingPost();
 	}
 
 	mirage() {
