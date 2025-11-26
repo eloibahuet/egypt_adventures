@@ -5171,7 +5171,7 @@ function startAutoSpinLoop() {
 		const bonusPool = QUALITY_BONUS[item.slot]?.[rarity] || [];
 		const extraAttributes = {};
 		if (bonusPool.length > 0) {
-			const bonusCount = rarity === 'rare' ? 2 : rarity === 'epic' ? 2 : 0; // 稀有和史詩有2個屬性
+			const bonusCount = rarity === 'rare' ? 2 : rarity === 'epic' ? 2 : rarity === 'legendary' ? 4 : 0; // 傳說有4個屬性
 			for (let i = 0; i < bonusCount; i++) {
 				const bonus = bonusPool[Math.floor(Math.random() * bonusPool.length)];
 				Object.assign(extraAttributes, bonus);
