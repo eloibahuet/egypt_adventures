@@ -397,7 +397,38 @@ const TRANSLATIONS = {
 		
 		// Misc
 		strangerMerchant: '🏪 陌生人原來是個特殊商人！',
-		bonus: '加成'
+		bonus: '加成',
+
+		// Stat labels (short form for UI)
+		gold: '金幣',
+		atkShort: '攻',
+		defShort: '防',
+		enemy: '敵人',
+		player: '玩家',
+		xp: '經驗',
+		shield: '護盾',
+		potions: '藥水',
+		luckCombat: '幸運(戰)',
+		luckGoldShort: '幸運(金)',
+		attackIn: '攻擊倒數',
+		enhanceBtn: '強化',
+		sellBtn: '賣出',
+		enhanceSuccess: '強化成功！',
+		enhanceFailed: '強化失敗，',
+		enhanceLevel: '強化等級',
+		enhanceCost: '金幣不足，無法強化。',
+		currentLevel: '目前',
+
+		// Trading post
+		tradingPostTitle: '沙漠驛站',
+		yourGold: '你的金幣',
+		supplies: '補給物資',
+		potionItem: '藥水 x1',
+		foodItem: '食物（恢復30HP+15體力）',
+		fullHealItem: '完全恢復（HP+體力全滿）',
+		equipmentManagement: '裝備管理',
+		leaveStation: '離開驛站',
+		leftStation: '你離開了驛站，繼續踏上旅程。'
 	},
 	
 	'en': {
@@ -797,9 +828,40 @@ const TRANSLATIONS = {
 		
 		// Misc
 		strangerMerchant: '🏪 The stranger turned out to be a special merchant!',
-		bonus: 'bonus'
+		bonus: 'bonus',
+
+		// Stat labels (short form for UI)
+		gold: 'gold',
+		atkShort: 'ATK',
+		defShort: 'DEF',
+		enemy: 'Enemy',
+		player: 'Player',
+		xp: 'XP',
+		shield: 'Shield',
+		potions: 'Potions',
+		luckCombat: 'Luck(C)',
+		luckGoldShort: 'Luck(G)',
+		attackIn: 'Attack in',
+		enhanceBtn: 'Enhance',
+		sellBtn: 'Sell',
+		enhanceSuccess: 'Enhancement success!',
+		enhanceFailed: 'Enhancement failed,',
+		enhanceLevel: 'Enhancement level',
+		enhanceCost: 'Not enough gold to enhance.',
+		currentLevel: 'current',
+
+		// Trading post
+		tradingPostTitle: 'Desert Station',
+		yourGold: 'Your Gold',
+		supplies: 'Supplies',
+		potionItem: 'Potion x1',
+		foodItem: 'Food (restore 30HP+15 stamina)',
+		fullHealItem: 'Full Recovery (HP+Stamina full)',
+		equipmentManagement: 'Equipment Management',
+		leaveStation: 'Leave Station',
+		leftStation: 'You left the station and continued your journey.'
 	},
-	
+
 	'fr': {
 		// UI Elements
 		title: 'Egypt Adventures',
@@ -1197,7 +1259,38 @@ const TRANSLATIONS = {
 		
 		// Misc
 		strangerMerchant: '🏪 L\'étranger s\'est avéré être un marchand spécial !',
-		bonus: 'bonus'
+		bonus: 'bonus',
+
+		// Stat labels (short form for UI)
+		gold: 'd\'or',
+		atkShort: 'ATT',
+		defShort: 'DÉF',
+		enemy: 'Ennemi',
+		player: 'Joueur',
+		xp: 'XP',
+		shield: 'Bouclier',
+		potions: 'Potions',
+		luckCombat: 'Chance(C)',
+		luckGoldShort: 'Chance(O)',
+		attackIn: 'Attaque dans',
+		enhanceBtn: 'Améliorer',
+		sellBtn: 'Vendre',
+		enhanceSuccess: 'Amélioration réussie !',
+		enhanceFailed: 'Amélioration échouée,',
+		enhanceLevel: 'Niveau d\'amélioration',
+		enhanceCost: 'Pas assez d\'or pour améliorer.',
+		currentLevel: 'actuel',
+
+		// Trading post
+		tradingPostTitle: 'Station du Désert',
+		yourGold: 'Votre Or',
+		supplies: 'Fournitures',
+		potionItem: 'Potion x1',
+		foodItem: 'Nourriture (restaure 30PV+15 endurance)',
+		fullHealItem: 'Récupération Complète (PV+Endurance max)',
+		equipmentManagement: 'Gestion d\'Équipement',
+		leaveStation: 'Quitter la Station',
+		leftStation: 'Vous avez quitté la station et continué votre voyage.'
 	}
 };
 

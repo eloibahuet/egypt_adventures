@@ -5,7 +5,8 @@
  * Shops mixin - methods to be attached to Game prototype
  * Dependencies: showMessage (global), t (global - i18n),
  *               ITEMS, QUALITY_BONUS, PYRAMID_AFFIXES (from data.js),
- *               cloneItem (from battle.js or global)
+ *               cloneItem, pickWeightedRarity (from EnemyGenerator.js),
+ *               Config (from Config.js), DOMRefs (from DOMRefs.js)
  */
 const ShopsMixin = {
 	/**
@@ -13,42 +14,23 @@ const ShopsMixin = {
 	 */
 	blackMarket() {
 		this.inShop = true;
-		showMessage('遇到黑市商人：能在黑市中獲得普通到史詩級裝備，此為賭博交易，最多購買兩件。');
+		showMessage(t('blackMarketMet'));
 
-		const panel = document.getElementById('blackmarket-panel');
-		const itemsDiv = document.getElementById('blackmarket-items');
+		const panel = DOMRefs.blackmarketPanel;
+		const itemsDiv = DOMRefs.blackmarketItems;
 		if (!panel || !itemsDiv) {
-			showMessage('（系統錯誤：黑市介面未載入）');
+			showMessage(t('blackMarketError'));
 			return;
 		}
 
-		// Generate 3 random offerings (common to epic)
-		const rarityWeights = [
-			{r:'common',w:40},
-			{r:'rare',w:30},
-			{r:'excellent',w:20},
-			{r:'epic',w:8},
-			{r:'legendary',w:2}
-		];
-
-		function pickRarity() {
-			let total = rarityWeights.reduce((s,i)=>s+i.w,0);
-			let r = Math.random()*total;
-			let acc = 0;
-			for (const rw of rarityWeights) {
-				acc += rw.w;
-				if (r < acc) return rw.r;
-			}
-			return 'common';
-		}
-
+		// Generate random offerings using centralized config
 		const offers = [];
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < Config.SHOP.BLACK_MARKET_ITEMS_COUNT; i++) {
 			const base = ITEMS[Math.floor(Math.random()*ITEMS.length)];
-			const r = pickRarity();
+			const r = pickWeightedRarity(Config.SHOP.RARITY_WEIGHTS);
 			const o = cloneItem(base, r);
 			// Randomize price: completely random, doesn't reveal quality
-			o.price = 149 + Math.floor(Math.random() * 880); // 149..1028 random amount
+			o.price = Config.SHOP.BLACK_MARKET_PRICE_MIN + Math.floor(Math.random() * Config.SHOP.BLACK_MARKET_PRICE_RANGE);
 			offers.push(o);
 		}
 
@@ -60,9 +42,8 @@ const ShopsMixin = {
 
 		offers.forEach((it, idx) => {
 			const el = document.createElement('div');
-			const goldText = currentLanguage === 'zh-TW' ? '金幣' : currentLanguage === 'fr' ? 'd\'or' : 'gold';
 			el.innerHTML = `<div style="margin-bottom:6px;"><strong>${it.name}</strong> (?) <br/>`+
-				`${t('price')}: ${it.price} ${goldText} <button class="bm-buy" data-idx="${idx}">${t('buy')}</button></div>`;
+				`${t('price')}: ${it.price} ${t('gold')} <button class="bm-buy" data-idx="${idx}">${t('buy')}</button></div>`;
 			itemsDiv.appendChild(el);
 		});
 
@@ -72,7 +53,7 @@ const ShopsMixin = {
 		Array.from(itemsDiv.querySelectorAll('.bm-buy')).forEach(b => {
 			b.addEventListener('click', () => {
 				const idx = parseInt(b.getAttribute('data-idx'));
-				if (panel._purchased >= 2) {
+				if (panel._purchased >= Config.SHOP.BLACK_MARKET_MAX_PURCHASES) {
 					showMessage(t('blackMarketLimit'));
 					return;
 				}
@@ -87,17 +68,13 @@ const ShopsMixin = {
 				game.player.gold -= offer.price;
 				game.player.inventory.push(Object.assign({}, offer));
 
-				const goldText = currentLanguage === 'zh-TW' ? '金幣' : currentLanguage === 'fr' ? 'd\'or' : 'gold';
-				showMessage(`${t('blackMarketBought')}: ${offer.name} (${offer.rarity}), ${t('spent')} ${offer.price} ${goldText}.`);
+				showMessage(`${t('blackMarketBought')}: ${offer.name} (${offer.rarity}), ${t('spent')} ${offer.price} ${t('gold')}.`);
 
 				// Reveal attributes
 				let attrs = [];
-				const atkLabel = currentLanguage === 'zh-TW' ? '攻' : currentLanguage === 'fr' ? 'ATT' : 'ATK';
-				const defLabel = currentLanguage === 'zh-TW' ? '防' : currentLanguage === 'fr' ? 'DÉF' : 'DEF';
-				const luckLabel = currentLanguage === 'zh-TW' ? '金運' : currentLanguage === 'fr' ? 'Chance Or' : 'Gold Luck';
-				if (offer.atk) attrs.push(`${atkLabel}+${offer.atk}`);
-				if (offer.def) attrs.push(`${defLabel}+${offer.def}`);
-				if (offer.luck_gold) attrs.push(`${luckLabel}+${offer.luck_gold}`);
+				if (offer.atk) attrs.push(`${t('atkShort')}+${offer.atk}`);
+				if (offer.def) attrs.push(`${t('defShort')}+${offer.def}`);
+				if (offer.luck_gold) attrs.push(`${t('goldLuck')}+${offer.luck_gold}`);
 				if (attrs.length === 0) attrs.push(t('noSpecialAttributes'));
 				showMessage(`${t('revealAttributes')}: ${attrs.join('  ')}`);
 
@@ -106,7 +83,7 @@ const ShopsMixin = {
 				b.disabled = true;
 				game.updateStatus();
 
-				if (panel._purchased >= 2) {
+				if (panel._purchased >= Config.SHOP.BLACK_MARKET_MAX_PURCHASES) {
 					showMessage(`${t('blackMarketLimit')} ${t('blackMarketEnd')}`);
 					Array.from(itemsDiv.querySelectorAll('.bm-buy')).forEach(bb => { bb.disabled = true; });
 				}
@@ -114,26 +91,20 @@ const ShopsMixin = {
 		});
 
 		// Close button
-		const close = document.getElementById('close-blackmarket');
+		const close = DOMRefs.closeBlackmarketBtn;
 		if (close && !close._bmBound) {
 			close._bmBound = true;
 			close.addEventListener('click', () => {
 				panel.style.display = 'none';
 				game.inShop = false;
 				showMessage(t('leaveBlackMarket'));
-				// Re-enable movement buttons
-				const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
-				const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
-				const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
-				// Generate direction hints after leaving black market
+				DOMRefs.enableMovement();
 				game.generateDirectionHints();
 			});
 		}
 
 		// Disable movement to prevent context switching
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		DOMRefs.disableMovement();
 		this.updateStatus();
 	},
 
@@ -141,19 +112,18 @@ const ShopsMixin = {
 	 * Trading post - buy supplies and sell equipment
 	 */
 	tradingPost() {
-		showMessage('🏪 你發現了一個沙漠驛站！');
-		showMessage('這裡可以補給物資，也可以出售你不需要的裝備。');
+		showMessage(t('tradingPostFound'));
+		showMessage(t('tradingPostDesc'));
 
 		// Disable movement buttons
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		DOMRefs.disableMovement();
 
 		const game = this;
 
 		// Create trading post panel
 		const panel = document.createElement('div');
 		panel.id = 'trading-post-panel';
+		panel.className = 'trading-post-panel';
 		panel.style.cssText = `
 			position: fixed;
 			top: 50%;
@@ -172,39 +142,39 @@ const ShopsMixin = {
 		`;
 
 		panel.innerHTML = `
-			<h2 style="color: #8b4513; margin: 0 0 12px 0; text-align: center; font-size: 1.3em;">🏪 沙漠驛站</h2>
+			<h2 style="color: #8b4513; margin: 0 0 12px 0; text-align: center; font-size: 1.3em;">🏪 ${t('tradingPostTitle')}</h2>
 
 			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
-				<h3 style="margin: 0; color: #d4a855; font-size: 1em;">💰 你的金幣: <span id="tp-gold">${this.player.gold}</span></h3>
+				<h3 style="margin: 0; color: #d4a855; font-size: 1em;">💰 ${t('yourGold')}: <span id="tp-gold">${this.player.gold}</span></h3>
 			</div>
 
 			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
-				<h3 style="margin: 0 0 8px 0; color: #2ecc71; font-size: 1em;">🛒 補給物資</h3>
+				<h3 style="margin: 0 0 8px 0; color: #2ecc71; font-size: 1em;">🛒 ${t('supplies')}</h3>
 				<div style="display: flex; flex-direction: column; gap: 6px;">
 					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.9em;">
-						<span>🧪 藥水 x1</span>
-						<button class="tp-buy-btn" data-item="potion" data-price="200" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">200金幣</button>
+						<span>🧪 ${t('potionItem')}</span>
+						<button class="tp-buy-btn" data-item="potion" data-price="200" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">200 ${t('gold')}</button>
 					</div>
 					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.85em;">
-						<span>🍖 食物（恢復30HP+15體力）</span>
-						<button class="tp-buy-btn" data-item="food" data-price="40" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">40金幣</button>
+						<span>🍖 ${t('foodItem')}</span>
+						<button class="tp-buy-btn" data-item="food" data-price="40" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">40 ${t('gold')}</button>
 					</div>
 					<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; background: #f8f8f8; border-radius: 4px; font-size: 0.85em;">
-						<span>💊 完全恢復（HP+體力全滿）</span>
-						<button class="tp-buy-btn" data-item="fullheal" data-price="80" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">80金幣</button>
+						<span>💊 ${t('fullHealItem')}</span>
+						<button class="tp-buy-btn" data-item="fullheal" data-price="80" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; white-space: nowrap;">80 ${t('gold')}</button>
 					</div>
 				</div>
 			</div>
 
 			<div style="background: #fff; padding: 8px; border-radius: 6px; margin-bottom: 10px;">
-				<h3 style="margin: 0 0 8px 0; color: #e74c3c; font-size: 1em;">💼 裝備管理</h3>
+				<h3 style="margin: 0 0 8px 0; color: #e74c3c; font-size: 1em;">💼 ${t('equipmentManagement')}</h3>
 				<div id="tp-inventory" style="max-height: 180px; overflow-y: auto;">
 					<!-- Equipment list will be dynamically generated -->
 				</div>
 			</div>
 
 			<div style="text-align: center; margin-top: 10px;">
-				<button id="tp-close" style="padding: 8px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1em;">離開驛站</button>
+				<button id="tp-close" style="padding: 8px 20px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1em;">${t('leaveStation')}</button>
 			</div>
 		`;
 
@@ -268,8 +238,8 @@ const ShopsMixin = {
 							<div style="font-size: 0.75em; color: #666;">${item.rarity}${item.isPyramid ? ' 🔺' : ''}</div>
 						</div>
 						<div style="display:flex; gap:6px; align-items:center;">
-							<button class="tp-enhance-btn" ${dataAttr} style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">強化</button>
-							${isEquipped ? '' : `<button class="tp-sell-btn" data-idx="${entry.idx}" data-price="${basePrice}" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">賣出 ${basePrice}金</button>`}
+							<button class="tp-enhance-btn" ${dataAttr} style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">${t('enhanceBtn')}</button>
+							${isEquipped ? '' : `<button class="tp-sell-btn" data-idx="${entry.idx}" data-price="${basePrice}" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; white-space: nowrap;">${t('sellBtn')} ${basePrice}</button>`}
 						</div>
 					</div>
 				`;
@@ -286,7 +256,7 @@ const ShopsMixin = {
 					if (item) {
 						game.player.inventory.splice(idx, 1);
 						game.player.gold += price;
-						showMessage(`💰 賣出 ${item.name}，獲得 ${price} 金幣。`);
+						showMessage(`${t('soldItem')} ${item.name}, ${t('obtainedGold')} ${price} ${t('gold')}.`);
 						document.getElementById('tp-gold').textContent = game.player.gold;
 						updateInventory();
 						game.updateStatus();
@@ -317,7 +287,7 @@ const ShopsMixin = {
 					// Calculate cost (grows with level)
 					const cost = Math.floor(100 * Math.pow(1.6, currentLevel));
 					if (game.player.gold < cost) {
-						showMessage('❌ 金幣不足，無法強化。');
+						showMessage(`❌ ${t('enhanceCost')}`);
 						return;
 					}
 
@@ -340,12 +310,12 @@ const ShopsMixin = {
 						item.enhanceLevel = targetLevel;
 						item.atk = (item._enhance_base_atk || 0) + item.enhanceLevel * atkPer;
 						item.def = (item._enhance_base_def || 0) + item.enhanceLevel * defPer;
-						showMessage(`✨ 強化成功！${item.name} 強化等級 +1（目前 +${item.enhanceLevel}）`);
+						showMessage(`✨ ${t('enhanceSuccess')} ${item.name} ${t('enhanceLevel')} +1 (${t('currentLevel')} +${item.enhanceLevel})`);
 					} else {
 						item.enhanceLevel = Math.max(0, currentLevel - 1);
 						item.atk = (item._enhance_base_atk || 0) + item.enhanceLevel * atkPer;
 						item.def = (item._enhance_base_def || 0) + item.enhanceLevel * defPer;
-						showMessage(`💥 強化失敗，${item.name} 強化等級 -1（目前 +${item.enhanceLevel}）`);
+						showMessage(`💥 ${t('enhanceFailed')} ${item.name} ${t('enhanceLevel')} -1 (${t('currentLevel')} +${item.enhanceLevel})`);
 					}
 
 					updateInventory();
@@ -367,24 +337,24 @@ const ShopsMixin = {
 
 					if (item === 'potion') {
 						game.player.potions += 1;
-						showMessage('🧪 購買藥水 x1');
+						showMessage(t('boughtPotion'));
 					} else if (item === 'food') {
 						const mapMultiplier = Math.pow(2, game.difficulty - 1);
 						const hpGain = Math.floor(30 * mapMultiplier);
 						const staminaGain = Math.floor(15 * mapMultiplier);
 						game.player.hp = Math.min(game.player.max_hp, game.player.hp + hpGain);
 						game.player.stamina = Math.min(game.player.max_stamina, game.player.stamina + staminaGain);
-						showMessage(`🍖 購買食物，HP +${hpGain}，體力 +${staminaGain}`);
+						showMessage(`🍖 ${t('boughtFood')}, HP +${hpGain}, ${t('stamina')} +${staminaGain}`);
 					} else if (item === 'fullheal') {
 						game.player.hp = game.player.max_hp;
 						game.player.stamina = game.player.max_stamina;
-						showMessage('💊 完全恢復！HP和體力全滿！');
+						showMessage(t('fullRestore'));
 					}
 
 					document.getElementById('tp-gold').textContent = game.player.gold;
 					game.updateStatus();
 				} else {
-					showMessage('❌ 金幣不足！');
+					showMessage(t('notEnoughGoldShop'));
 				}
 			});
 		});
@@ -394,12 +364,8 @@ const ShopsMixin = {
 		if (closeBtn) {
 			closeBtn.addEventListener('click', () => {
 				document.body.removeChild(panel);
-				showMessage('你離開了驛站，繼續踏上旅程。');
-				// Re-enable movement buttons
-				if (mf) mf.disabled = false;
-				if (ml) ml.disabled = false;
-				if (mr) mr.disabled = false;
-				// Generate direction hints
+				showMessage(t('leftStation'));
+				DOMRefs.enableMovement();
 				game.generateDirectionHints();
 			});
 		}

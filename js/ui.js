@@ -3,20 +3,21 @@
 
 /**
  * UI mixin - methods to be attached to Game prototype
- * Dependencies: showMessage (global), t (global - i18n), currentLanguage (global),
- *               SET_BONUSES, ENEMY_IMAGE_MAP (from data.js)
+ * Dependencies: showMessage (global), t (global - i18n),
+ *               SET_BONUSES, ENEMY_IMAGE_MAP (from data.js),
+ *               DOMRefs (from DOMRefs.js)
  */
 const UIMixin = {
 	/**
 	 * Update player and enemy status panels
 	 */
 	updateStatus() {
-		const playerStatusEl = document.getElementById('player-status');
-		const enemyStatusEl = document.getElementById('enemy-status');
+		const playerStatusEl = DOMRefs.playerStatus;
+		const enemyStatusEl = DOMRefs.enemyStatus;
 
 		if (playerStatusEl) {
 			// Calculate combo display text (during battle)
-			let comboText = '無';
+			let comboText = t('none');
 			if (this.inBattle) {
 				const sym = this.consecutivePrimarySymbol || '-';
 				const count = this.consecutivePrimaryCount || 0;
@@ -34,49 +35,45 @@ const UIMixin = {
 			const setBonus = this.getActiveSetBonus();
 			let setBonusHtml = '';
 			if (setBonus) {
-				let rarityText = '';
-				if (setBonus.rarity === 'rare') rarityText = '稀有';
-				else if (setBonus.rarity === 'excellent') rarityText = '精良';
-				else if (setBonus.rarity === 'epic') rarityText = '史詩';
-				else if (setBonus.rarity === 'legendary') rarityText = '傳說';
+				const rarityText = this._getRarityText(setBonus.rarity);
 				setBonusHtml = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; margin: 4px 0;">⚡ ${setBonus.name} (${rarityText})</div>`;
 			}
 
 			playerStatusEl.innerHTML = `
-				<div class="stat-label">${currentLanguage === 'zh-TW' ? '玩家' : currentLanguage === 'fr' ? 'Joueur' : 'Player'} Lv.${this.player.level}</div>
+				<div class="stat-label">${t('player')} Lv.${this.player.level}</div>
 				<div class="hp-row">${t('hp')}: <span class="hp-text">${this.player.hp}/${this.player.max_hp}</span></div>
 				<div class="hp-bar"><div class="hp-inner" style="width:${playerPct}%"></div></div>
-				<div class="xp-row">${currentLanguage === 'zh-TW' ? '經驗' : currentLanguage === 'fr' ? 'XP' : 'XP'}: <span class="xp-text">${this.player.xp}/${xpNeeded === Infinity ? 'MAX' : xpNeeded}</span></div>
+				<div class="xp-row">${t('xp')}: <span class="xp-text">${this.player.xp}/${xpNeeded === Infinity ? 'MAX' : xpNeeded}</span></div>
 				<div class="xp-bar"><div class="xp-inner" style="width:${xpPct}%"></div></div>
 				<div class="stats-row">
 					<div>${t('stamina')}: ${this.player.stamina}/${this.player.max_stamina}</div>
-					<div>${currentLanguage === 'zh-TW' ? '護盾' : currentLanguage === 'fr' ? 'Bouclier' : 'Shield'}: ${this.player.shield}</div>
-					<div>${currentLanguage === 'zh-TW' ? '藥水' : currentLanguage === 'fr' ? 'Potions' : 'Potions'}: ${this.player.potions}</div>
-					<div>${currentLanguage === 'zh-TW' ? '金幣' : currentLanguage === 'fr' ? 'Or' : 'Gold'}: ${this.player.gold}</div>
-					<div>${currentLanguage === 'zh-TW' ? '幸運(戰)' : currentLanguage === 'fr' ? 'Chance(C)' : 'Luck(C)'}: ${this.player.luck_combat}</div>
-					<div>${currentLanguage === 'zh-TW' ? '幸運(金)' : currentLanguage === 'fr' ? 'Chance(O)' : 'Luck(G)'}: ${this.player.luck_gold}</div>
+					<div>${t('shield')}: ${this.player.shield}</div>
+					<div>${t('potions')}: ${this.player.potions}</div>
+					<div>${t('gold')}: ${this.player.gold}</div>
+					<div>${t('luckCombat')}: ${this.player.luck_combat}</div>
+					<div>${t('luckGoldShort')}: ${this.player.luck_gold}</div>
 				</div>
 				${setBonusHtml}
 				<div class="combo-row ${(this.inBattle && (this.consecutivePrimaryCount||0) > 1) ? 'combo-active' : ''}">Combo: ${comboText}</div>
 				<div class="equip-row">
-					<span class="equip-label">${currentLanguage === 'zh-TW' ? '武器' : currentLanguage === 'fr' ? 'Arme' : 'Weapon'}: ${this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
+					<span class="equip-label">${t('weapon')}: ${this.player.equipment.weapon ? this.formatItem(this.player.equipment.weapon) : t('none')}</span>
 					<div class="equip-buttons">
-						<button class="open-equip-btn" data-slot="weapon">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="weapon">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
+						<button class="open-equip-btn" data-slot="weapon">${t('equip')}</button>
+						<button class="unequip-btn" data-slot="weapon">${t('unequip')}</button>
 					</div>
 				</div>
 				<div class="equip-row">
-					<span class="equip-label">${currentLanguage === 'zh-TW' ? '防具' : currentLanguage === 'fr' ? 'Armure' : 'Armor'}: ${this.player.equipment.armor ? this.formatItem(this.player.equipment.armor) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
+					<span class="equip-label">${t('armor')}: ${this.player.equipment.armor ? this.formatItem(this.player.equipment.armor) : t('none')}</span>
 					<div class="equip-buttons">
-						<button class="open-equip-btn" data-slot="armor">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="armor">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
+						<button class="open-equip-btn" data-slot="armor">${t('equip')}</button>
+						<button class="unequip-btn" data-slot="armor">${t('unequip')}</button>
 					</div>
 				</div>
 				<div class="equip-row">
-					<span class="equip-label">${currentLanguage === 'zh-TW' ? '護符' : currentLanguage === 'fr' ? 'Amulette' : 'Amulet'}: ${this.player.equipment.amulet ? this.formatItem(this.player.equipment.amulet) : (currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None')}</span>
+					<span class="equip-label">${t('amulet')}: ${this.player.equipment.amulet ? this.formatItem(this.player.equipment.amulet) : t('none')}</span>
 					<div class="equip-buttons">
-						<button class="open-equip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '裝備' : currentLanguage === 'fr' ? 'Équiper' : 'Equip'}</button>
-						<button class="unequip-btn" data-slot="amulet">${currentLanguage === 'zh-TW' ? '卸下' : currentLanguage === 'fr' ? 'Enlever' : 'Unequip'}</button>
+						<button class="open-equip-btn" data-slot="amulet">${t('equip')}</button>
+						<button class="unequip-btn" data-slot="amulet">${t('unequip')}</button>
 					</div>
 				</div>
 			`;
@@ -85,10 +82,6 @@ const UIMixin = {
 		// Update enemy status to right panel
 		if (enemyStatusEl) {
 			const enemyPct = this.enemy && this.enemy.max_hp ? Math.max(0, Math.min(100, Math.floor((this.enemy.hp / this.enemy.max_hp) * 100))) : 0;
-			const enemyLabel = currentLanguage === 'zh-TW' ? '敵人' : currentLanguage === 'fr' ? 'Ennemi' : 'Enemy';
-			const noneLabel = currentLanguage === 'zh-TW' ? '無' : currentLanguage === 'fr' ? 'Aucun' : 'None';
-			const attackCountdown = currentLanguage === 'zh-TW' ? '攻擊倒數' : currentLanguage === 'fr' ? 'Attaque dans' : 'Attack in';
-			const strength = currentLanguage === 'zh-TW' ? '強度' : currentLanguage === 'fr' ? 'Force' : 'Strength';
 
 			// Select enemy image based on type
 			let enemyImage = '';
@@ -98,27 +91,27 @@ const UIMixin = {
 			}
 
 			enemyStatusEl.innerHTML = `
-				<div class="stat-label">${enemyLabel}</div>
+				<div class="stat-label">${t('enemy')}</div>
 				${this.inBattle ? `
-					<div class="hp-row">${this.enemy.name || enemyLabel}  ${t('hp')}: <span class="hp-text">${this.enemy.hp}/${this.enemy.max_hp}</span></div>
+					<div class="hp-row">${this.enemy.name || t('enemy')}  ${t('hp')}: <span class="hp-text">${this.enemy.hp}/${this.enemy.max_hp}</span></div>
 					<div class="hp-bar"><div class="hp-inner enemy-hp" style="width:${enemyPct}%"></div></div>
 					${enemyImage}
-					<div class="stats-row"><div>${attackCountdown}: ${this.enemy.turnsToAttack}</div><div>${strength}: x${(this.enemy.strength||1).toFixed(2)}</div></div>
+					<div class="stats-row"><div>${t('attackIn')}: ${this.enemy.turnsToAttack}</div><div>${t('strengthX').replace(' x', '')}: x${(this.enemy.strength||1).toFixed(2)}</div></div>
 				` : `
-					<div class="hp-row">${noneLabel}</div>
+					<div class="hp-row">${t('none')}</div>
 					<div class="hp-bar"><div class="hp-inner enemy-hp" style="width:0%"></div></div>
 				`}
 			`;
 		}
 
 		// Sync brief status summary to sidebar (as backup display)
-		const summary = document.getElementById('status-summary');
+		const summary = DOMRefs.statusSummary;
 		if (summary) {
-			summary.textContent = `HP:${this.player.hp}/${this.player.max_hp}  體力:${this.player.stamina}/${this.player.max_stamina}  金幣:${this.player.gold}  幸運(戰鬥):${this.player.luck_combat} 金幣幸運:${this.player.luck_gold}`;
+			summary.textContent = `HP:${this.player.hp}/${this.player.max_hp}  ${t('stamina')}:${this.player.stamina}/${this.player.max_stamina}  ${t('gold')}:${this.player.gold}  ${t('luckCombat')}:${this.player.luck_combat} ${t('goldLuck')}:${this.player.luck_gold}`;
 		}
 
 		// Update map steps display
-		const mapEl = document.getElementById('map-steps');
+		const mapEl = DOMRefs.mapSteps;
 		if (mapEl) {
 			if (this.inPyramid) {
 				mapEl.textContent = `🔺 ${this.pyramidSteps}/${this.pyramidMaxSteps}`;
@@ -129,12 +122,27 @@ const UIMixin = {
 	},
 
 	/**
+	 * Helper to get localized rarity text
+	 * @param {string} rarity - Rarity key
+	 * @returns {string} Localized rarity name
+	 */
+	_getRarityText(rarity) {
+		const rarityKeys = {
+			'rare': { 'zh-TW': '稀有', 'en': 'Rare', 'fr': 'Rare' },
+			'excellent': { 'zh-TW': '精良', 'en': 'Excellent', 'fr': 'Excellent' },
+			'epic': { 'zh-TW': '史詩', 'en': 'Epic', 'fr': 'Épique' },
+			'legendary': { 'zh-TW': '傳說', 'en': 'Legendary', 'fr': 'Légendaire' }
+		};
+		return rarityKeys[rarity]?.[currentLanguage] || rarityKeys[rarity]?.['en'] || rarity;
+	},
+
+	/**
 	 * Show equipment panel with optional slot filter
 	 * @param {string|null} filterSlot - Filter by slot type ('weapon'|'armor'|'amulet') or null for all
 	 */
 	showEquipmentPanel(filterSlot = null) {
-		const panel = document.getElementById('equipment-panel');
-		const content = document.getElementById('equip-content');
+		const panel = DOMRefs.equipmentPanel;
+		const content = DOMRefs.equipContent;
 		if (!panel || !content) return;
 
 		// List current equipment and inventory
@@ -152,33 +160,18 @@ const UIMixin = {
 		const setBonus = this.getActiveSetBonus();
 		if (setBonus) {
 			const setParts = [];
-			const atkLabel = currentLanguage === 'zh-TW' ? '攻' : currentLanguage === 'fr' ? 'ATT' : 'ATK';
-			const defLabel = currentLanguage === 'zh-TW' ? '防' : currentLanguage === 'fr' ? 'DÉF' : 'DEF';
-			const staminaLabel = currentLanguage === 'zh-TW' ? '體力' : currentLanguage === 'fr' ? 'End' : 'Stam';
-			const combatLuckLabel = currentLanguage === 'zh-TW' ? '戰運' : currentLanguage === 'fr' ? 'Chance C' : 'Luck C';
-			const goldLuckLabel = currentLanguage === 'zh-TW' ? '金運' : currentLanguage === 'fr' ? 'Chance O' : 'Luck G';
-			const critLabel = currentLanguage === 'zh-TW' ? '暴擊' : currentLanguage === 'fr' ? 'Crit' : 'Crit';
-			const comboLabel = currentLanguage === 'zh-TW' ? '連擊' : currentLanguage === 'fr' ? 'Combo' : 'Combo';
-			const skillLabel = currentLanguage === 'zh-TW' ? '技能' : currentLanguage === 'fr' ? 'Comp' : 'Skill';
-			const dodgeLabel = currentLanguage === 'zh-TW' ? '閃避' : currentLanguage === 'fr' ? 'Évit' : 'Dodge';
-
-			if (setBonus.effects.atk) setParts.push(`${atkLabel}+${setBonus.effects.atk}`);
-			if (setBonus.effects.def) setParts.push(`${defLabel}+${setBonus.effects.def}`);
+			if (setBonus.effects.atk) setParts.push(`${t('atkShort')}+${setBonus.effects.atk}`);
+			if (setBonus.effects.def) setParts.push(`${t('defShort')}+${setBonus.effects.def}`);
 			if (setBonus.effects.max_hp_bonus) setParts.push(`${t('hp')}+${setBonus.effects.max_hp_bonus}`);
-			if (setBonus.effects.stamina_bonus) setParts.push(`${staminaLabel}+${setBonus.effects.stamina_bonus}`);
-			if (setBonus.effects.luck_combat) setParts.push(`${combatLuckLabel}+${setBonus.effects.luck_combat}`);
-			if (setBonus.effects.luck_gold) setParts.push(`${goldLuckLabel}+${setBonus.effects.luck_gold}`);
-			if (setBonus.effects.crit_rate) setParts.push(`${critLabel}+${setBonus.effects.crit_rate}%`);
-			if (setBonus.effects.combo_rate) setParts.push(`${comboLabel}+${setBonus.effects.combo_rate}%`);
-			if (setBonus.effects.skill_power) setParts.push(`${skillLabel}+${setBonus.effects.skill_power}%`);
-			if (setBonus.effects.dodge_rate) setParts.push(`${dodgeLabel}+${setBonus.effects.dodge_rate}%`);
+			if (setBonus.effects.stamina_bonus) setParts.push(`${t('stamina')}+${setBonus.effects.stamina_bonus}`);
+			if (setBonus.effects.luck_combat) setParts.push(`${t('combatLuck')}+${setBonus.effects.luck_combat}`);
+			if (setBonus.effects.luck_gold) setParts.push(`${t('goldLuck')}+${setBonus.effects.luck_gold}`);
+			if (setBonus.effects.crit_rate) setParts.push(`Crit+${setBonus.effects.crit_rate}%`);
+			if (setBonus.effects.combo_rate) setParts.push(`Combo+${setBonus.effects.combo_rate}%`);
+			if (setBonus.effects.skill_power) setParts.push(`${t('skill')}+${setBonus.effects.skill_power}%`);
+			if (setBonus.effects.dodge_rate) setParts.push(`Dodge+${setBonus.effects.dodge_rate}%`);
 
-			let rarityText = '';
-			if (setBonus.rarity === 'rare') rarityText = currentLanguage === 'zh-TW' ? '稀有' : currentLanguage === 'fr' ? 'Rare' : 'Rare';
-			else if (setBonus.rarity === 'excellent') rarityText = currentLanguage === 'zh-TW' ? '精良' : currentLanguage === 'fr' ? 'Excellent' : 'Excellent';
-			else if (setBonus.rarity === 'epic') rarityText = currentLanguage === 'zh-TW' ? '史詩' : currentLanguage === 'fr' ? 'Épique' : 'Epic';
-			else if (setBonus.rarity === 'legendary') rarityText = currentLanguage === 'zh-TW' ? '傳說' : currentLanguage === 'fr' ? 'Légendaire' : 'Legendary';
-
+			const rarityText = this._getRarityText(setBonus.rarity);
 			html += `<hr/><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 6px; color: white; margin: 8px 0;"><strong>⚡ ${t('setBonus')}: ${setBonus.name} (${rarityText})</strong><br/>${setParts.join(' ')}</div>`;
 		}
 
@@ -236,9 +229,7 @@ const UIMixin = {
 	 */
 	showChoicePanel(title, choices, callback) {
 		// Disable movement buttons
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		DOMRefs.disableMovement();
 
 		// Create choice dialog
 		const panel = document.createElement('div');
@@ -303,9 +294,7 @@ const UIMixin = {
 					panel.parentNode.removeChild(panel);
 				}
 				// Re-enable movement buttons
-				if (mf) mf.disabled = false;
-				if (ml) ml.disabled = false;
-				if (mr) mr.disabled = false;
+				DOMRefs.enableMovement();
 				// Execute callback
 				if (callback) {
 					callback(choiceId);
@@ -319,9 +308,7 @@ const UIMixin = {
 	 */
 	showPyramidChoice() {
 		// Disable movement buttons
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		DOMRefs.disableMovement();
 
 		const game = this;
 
@@ -344,17 +331,16 @@ const UIMixin = {
 		`;
 
 		panel.innerHTML = `
-			<h2 style="color: #8b4513; margin-top: 0;">🔺 金字塔副本</h2>
+			<h2 style="color: #8b4513; margin-top: 0;">${t('pyramidExploration')}</h2>
 			<p style="font-size: 1.1em; line-height: 1.6;">
-				是否進入金字塔探險？
+				${t('pyramidDanger')}
 			</p>
 			<div style="background: #fff; padding: 12px; border-radius: 6px; margin: 12px 0; border: 1px solid #ddd;">
-				<strong>副本特性（地圖${this.difficulty}）：</strong><br>
-				✦ 8步探險旅程<br>
-				✦ 敵人強度極高（HP x${(3 + this.difficulty * 0.5).toFixed(1)}, ATK x${(2.5 + this.difficulty * 0.3).toFixed(1)}）<br>
-				✦ 經驗值 x15 倍<br>
-				✦ 金幣 x15 倍<br>
-				✦ 保證掉落優良以上裝備<br>
+				<strong>${t('pyramidInfo').split(':')[0]}:</strong><br>
+				✦ 8 ${t('steps')}<br>
+				✦ ${t('hp')} x${(3 + this.difficulty * 0.5).toFixed(1)}, ${t('atkShort')} x${(2.5 + this.difficulty * 0.3).toFixed(1)}<br>
+				✦ ${t('xp')} x15<br>
+				✦ ${t('gold')} x15<br>
 			</div>
 			<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
 				<button id="pyramid-enter-btn" style="
@@ -367,7 +353,7 @@ const UIMixin = {
 					cursor: pointer;
 					font-weight: bold;
 					box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-				">⚔️ 進入探險</button>
+				">⚔️ ${t('enterPyramid').replace('⚡ ', '')}</button>
 				<button id="pyramid-decline-btn" style="
 					padding: 12px 24px;
 					font-size: 1.1em;
@@ -378,7 +364,7 @@ const UIMixin = {
 					cursor: pointer;
 					font-weight: bold;
 					box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-				">🚶 離開</button>
+				">🚶 ${t('close')}</button>
 			</div>
 		`;
 
@@ -396,12 +382,9 @@ const UIMixin = {
 		const declineBtn = document.getElementById('pyramid-decline-btn');
 		if (declineBtn) {
 			declineBtn.addEventListener('click', () => {
-				showMessage('你決定不進入金字塔，繼續前行。');
+				showMessage(t('declinePyramid'));
 				document.body.removeChild(panel);
-				// Re-enable movement buttons
-				if (mf) mf.disabled = false;
-				if (ml) ml.disabled = false;
-				if (mr) mr.disabled = false;
+				DOMRefs.enableMovement();
 			});
 		}
 	}
