@@ -575,16 +575,10 @@ const EVENTS = ['monster', 'elite', 'mini_boss', 'merchant', 'black_market', 'oa
 const EVENT_WEIGHTS = [22,8,4,7,4,6,8,4,6,6,6,5,8,4,5,5,4,5,4,6,2,4,4,6,5,5,5,5,4,6,4,5];
 
 // 敵人圖片 Mapping
-// 建議把圖片放在 `images/enemies/` 資料夾內，檔名可參考下方 key
 const ENEMY_IMAGE_MAP = {
 	monster: 'images/enemies/monster.png',
 	elite: 'images/enemies/elite.png',
 	mini_boss: 'images/enemies/mini_boss.png',
-	bandit_ambush: 'images/enemies/bandit.png',
-	scorpion_nest: 'images/enemies/scorpion.png',
-	nomad_camp: 'images/enemies/nomad.png',
-	beast_pack: 'images/enemies/beast_pack.png',
-	caravan_wreckage: 'images/enemies/wreckage.png',
 	default: 'images/enemies/monster.png'
 };
 
@@ -633,7 +627,6 @@ function chooseEvent() {
 		}
 		return pool[Math.floor(Math.random() * pool.length)];
 	}
-	const VISIBLE = 2; // 中間顯示1個，實作上每個 symbol 高度為 60px，reel 高度 120px
 	// 動態獲取符號高度，根據螢幕寬度適配（與 CSS 同步）
 	function getSymbolHeight() {
 		const width = window.innerWidth;
@@ -847,18 +840,6 @@ function genEnemyName(type, lang = typeof currentLanguage !== 'undefined' ? curr
 	return patterns[choiceIndex]();
 }
 
-// demo: 在遊戲中可呼叫 demoEnemyNames(lang, count) 顯示示例名稱
-function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'zh-TW', count = 10) {
-	const types = ['monster', 'elite', 'mini_boss'];
-	for (let i = 0; i < count; i++) {
-		const t = types[Math.floor(Math.random() * types.length)];
-		const name = genEnemyName(t, lang);
-		console.log(`${i+1}. [${t}] ${name}`);
-		// 若頁面有訊息區，顯示前 8 個
-		if (i < 8 && typeof showMessage === 'function') showMessage(`${i+1}. [${t}] ${name}`);
-	}
-}
-
 	// 每軸建立長條（重複符號以便平滑旋轉）
 	function populateReels() {
 		for (let r = 0; r < reels.length; r++) {
@@ -960,46 +941,11 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			}
 		}
 
-		// 檢測套裝效果（需要武器+護甲+護符三件相同字綴且同品質）
-		getActiveSetBonus() {
-			const weapon = this.player.equipment.weapon;
-			const armor = this.player.equipment.armor;
-			const amulet = this.player.equipment.amulet;
-			
-			// 檢查是否都是金字塔裝備
-			if (!weapon || !armor || !amulet) return null;
-			if (!weapon.isPyramid || !armor.isPyramid || !amulet.isPyramid) return null;
-			
-			// 檢查字綴是否相同
-			if (weapon.affix !== armor.affix || weapon.affix !== amulet.affix) return null;
-			
-			// 檢查品質是否相同（不能混搭）
-			if (weapon.rarity !== armor.rarity || weapon.rarity !== amulet.rarity) return null;
-			
-			// 返回套裝效果
-			const setBonus = SET_BONUSES[weapon.affix];
-			if (setBonus) {
-				return { ...setBonus, affix: weapon.affix, affixName: weapon.affixName, rarity: weapon.rarity };
-			}
-			return null;
-		}
-
 		// 獲取套裝效果屬性加成值
 		getSetBonusValue(attrName) {
 			const setBonus = this.getActiveSetBonus();
 			if (!setBonus || !setBonus.effects) return 0;
 			return setBonus.effects[attrName] || 0;
-		}
-        
-		// 計算閃避機率
-		calculateDodgeChance(armorDodge) {
-			const dodgeChance = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodge / 100); // 最多 50% 閃避
-			showMessage(`你閃避了敵人的自動攻擊！(戰鬥幸運 ${this.player.luck_combat})`);
-			// 成功閃避後消耗一些戰鬥幸運，避免永久累積
-			if (this.player.luck_combat && this.player.luck_combat > 0) {
-				this.player.luck_combat = Math.max(0, this.player.luck_combat - 1);
-				showMessage(`戰鬥幸運 -1（剩餘 ${this.player.luck_combat}）。`);
-			}
 		}
 
 		// Helper: 格式化物品屬性顯示
@@ -1275,13 +1221,8 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
                 // 根據敵人類型選擇對應圖片
                 let enemyImage = '';
                 if (this.inBattle && this.enemy.type) {
-                    if (this.enemy.type === 'monster') {
-                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="images/enemies/monster.png" alt="普通敵人" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-                    } else if (this.enemy.type === 'elite') {
-                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="images/enemies/elite.png" alt="菁英敵人" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-                    } else if (this.enemy.type === 'mini_boss') {
-                        enemyImage = '<div style="text-align: center; margin-top: 5px;"><img src="images/enemies/mini_boss.png" alt="小頭目" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>';
-                    }
+                    const imagePath = ENEMY_IMAGE_MAP[this.enemy.type] || ENEMY_IMAGE_MAP.default;
+                    enemyImage = `<div style="text-align: center; margin-top: 5px;"><img src="${imagePath}" alt="${this.enemy.name || ''}" style="max-width: 100%; width: 120px; height: auto; opacity: 0.9; mix-blend-mode: multiply;"></div>`;
                 }				enemyStatusEl.innerHTML = `
 					<div class="stat-label">${enemyLabel}</div>
 					${this.inBattle ? `
@@ -1757,7 +1698,7 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			} else if (event === 'quicksand') {
 				this.quicksand();
 			} else if (event === 'scorpion_nest') {
-				this.scorpionNest();
+				this.scorpion();
 			} else if (event === 'ancient_ruins') {
 				this.ancientRuins();
 			} else if (event === 'mysterious_stranger') {
@@ -2369,6 +2310,8 @@ function demoEnemyNames(lang = typeof currentLanguage !== 'undefined' ? currentL
 			const hpLoss = 10 + Math.floor(Math.random() * 15);
 			const staminaLoss = 15 + Math.floor(Math.random() * 15);
 			this.player.hp = Math.max(1, this.player.hp - hpLoss);
+			this.player.stamina = Math.max(0, this.player.stamina - staminaLoss);
+			showMessage(`${t('damageTaken')} -${hpLoss} ${t('hp')}, ${t('staminaLoss')} -${staminaLoss}`);
 		}
 	}
 	scorpion() {
