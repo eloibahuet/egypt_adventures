@@ -1,6 +1,6 @@
 // ===== Debug Module =====
 // Handles debug panel and cheat functions
-// Dependencies: showMessage (global), ITEMS (from data.js), QUALITY_BONUS (from data.js)
+// Dependencies: showMessage (global), DOMRefs (global), ITEMS (from data.js), QUALITY_BONUS (from data.js)
 
 /**
  * Debug system - provides debug panel and cheat functions
@@ -293,13 +293,13 @@ const DebugSystem = {
 				// Enable battle controls
 				if (spinBtn) spinBtn.disabled = false;
 				if (autoBtn) autoBtn.disabled = false;
-				if (game.disableMovementButtons) game.disableMovementButtons();
+				DOMRefs.disableMovement();
 			}
 		} else if (wasBattle && !game.inBattle) {
 			// Disable battle controls
 			if (spinBtn) spinBtn.disabled = true;
 			if (autoBtn) autoBtn.disabled = true;
-			if (game.enableMovementButtons) game.enableMovementButtons();
+			DOMRefs.enableMovement();
 		}
 
 		game.updateStatus();
@@ -407,7 +407,7 @@ const DebugSystem = {
 
 				try { if (typeof stopAutoSpinLoop === 'function') stopAutoSpinLoop(); } catch (e) { }
 
-				if (game.enableMovementButtons) game.enableMovementButtons();
+				DOMRefs.enableMovement();
 
 				self.loadDebugValues();
 				game.updateStatus();

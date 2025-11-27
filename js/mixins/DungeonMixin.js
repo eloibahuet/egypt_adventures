@@ -1,6 +1,6 @@
 // ===== Dungeon Module =====
 // Handles pyramid/dungeon related functionality
-// Dependencies: showMessage (global)
+// Dependencies: showMessage (global), DOMRefs (global)
 
 /**
  * Dungeon mixin - methods to be attached to Game prototype
@@ -20,7 +20,7 @@ const DungeonMixin = {
 		this.updateStatus();
 
 		// Re-enable movement buttons
-		this.enableMovementButtons();
+		DOMRefs.enableMovement();
 	},
 
 	/**
@@ -79,29 +79,5 @@ const DungeonMixin = {
 		if (!this.inPyramid) return 1;
 		// Pyramid base multiplier + progression bonus
 		return 1.5 + (this.pyramidSteps * 0.1);
-	},
-
-	/**
-	 * Enable movement buttons (helper)
-	 */
-	enableMovementButtons() {
-		const mf = document.getElementById('move-front');
-		const ml = document.getElementById('move-left');
-		const mr = document.getElementById('move-right');
-		if (mf) mf.disabled = false;
-		if (ml) ml.disabled = false;
-		if (mr) mr.disabled = false;
-	},
-
-	/**
-	 * Disable movement buttons (helper)
-	 */
-	disableMovementButtons() {
-		const mf = document.getElementById('move-front');
-		const ml = document.getElementById('move-left');
-		const mr = document.getElementById('move-right');
-		if (mf) mf.disabled = true;
-		if (ml) ml.disabled = true;
-		if (mr) mr.disabled = true;
 	}
 };

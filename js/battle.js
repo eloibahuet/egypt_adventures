@@ -3,7 +3,7 @@
 
 /**
  * Battle mixin - methods to be attached to Game prototype
- * Dependencies: showMessage (global), MusicSystem (global),
+ * Dependencies: showMessage (global), MusicSystem (global), App (global),
  *               SYMBOLS, ITEMS, QUALITY_BONUS, PYRAMID_AFFIXES (from data.js),
  *               genEnemyName (from enemyNames.js)
  */
@@ -76,9 +76,7 @@ const BattleMixin = {
 			stopSequentially();
 			// Enable buttons after first spin completes
 			setTimeout(() => {
-				if (typeof window.enableBattleButtons === 'function') {
-					window.enableBattleButtons();
-				}
+				App.enableBattleButtons();
 			}, 200);
 		}, 900);
 	},

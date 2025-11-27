@@ -3,6 +3,27 @@
 // Note: Event definitions moved to js/events/ modules (registry.js, travel.js, etc.)
 // Events are now registered via EventRegistry.register() in each domain file
 
+// Standard rarities in order (used by item generation)
+const RARITIES = ['common', 'rare', 'excellent', 'epic', 'legendary'];
+
+// Rarity scale multipliers for attribute scaling
+const RARITY_SCALE = {
+    common: 1,
+    rare: 1.5,
+    excellent: 1.8,
+    epic: 2.2,
+    legendary: 3.0
+};
+
+// Bonus count by rarity for quality bonuses
+const BONUS_COUNT_BY_RARITY = {
+    common: 0,
+    rare: 2,
+    excellent: 1,
+    epic: 3,
+    legendary: 4
+};
+
 // 敵人圖片 Mapping
 const ENEMY_IMAGE_MAP = {
 	monster: 'images/enemies/monster.png',

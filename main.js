@@ -94,31 +94,35 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 
-	// Apply mixins to Game prototype before instantiation
-	if (typeof EquipmentMixin !== 'undefined') {
-		Object.assign(Game.prototype, EquipmentMixin);
+	// Required mixins for game functionality
+	const REQUIRED_MIXINS = {
+		EquipmentMixin: typeof EquipmentMixin !== 'undefined' ? EquipmentMixin : null,
+		UIMixin: typeof UIMixin !== 'undefined' ? UIMixin : null,
+		BattleMixin: typeof BattleMixin !== 'undefined' ? BattleMixin : null,
+		ShopsMixin: typeof ShopsMixin !== 'undefined' ? ShopsMixin : null,
+		PersistenceMixin: typeof PersistenceMixin !== 'undefined' ? PersistenceMixin : null,
+		DungeonMixin: typeof DungeonMixin !== 'undefined' ? DungeonMixin : null,
+		NavigationMixin: typeof NavigationMixin !== 'undefined' ? NavigationMixin : null,
+		XPMixin: typeof XPMixin !== 'undefined' ? XPMixin : null
+	};
+
+	// Validate all required mixins loaded
+	const missingMixins = Object.entries(REQUIRED_MIXINS)
+		.filter(([name, mixin]) => !mixin)
+		.map(([name]) => name);
+
+	if (missingMixins.length > 0) {
+		const errorMsg = `Game initialization failed: Missing mixins: ${missingMixins.join(', ')}`;
+		console.error(errorMsg);
+		showMessage(`❌ ${errorMsg}`);
+		return; // Prevent game from starting with missing functionality
 	}
-	if (typeof UIMixin !== 'undefined') {
-		Object.assign(Game.prototype, UIMixin);
-	}
-	if (typeof BattleMixin !== 'undefined') {
-		Object.assign(Game.prototype, BattleMixin);
-	}
-	if (typeof ShopsMixin !== 'undefined') {
-		Object.assign(Game.prototype, ShopsMixin);
-	}
-	if (typeof PersistenceMixin !== 'undefined') {
-		Object.assign(Game.prototype, PersistenceMixin);
-	}
-	if (typeof DungeonMixin !== 'undefined') {
-		Object.assign(Game.prototype, DungeonMixin);
-	}
-	if (typeof NavigationMixin !== 'undefined') {
-		Object.assign(Game.prototype, NavigationMixin);
-	}
-	if (typeof XPMixin !== 'undefined') {
-		Object.assign(Game.prototype, XPMixin);
-	}
+
+	// Apply mixins to Game prototype
+	Object.values(REQUIRED_MIXINS).forEach(mixin => {
+		Object.assign(Game.prototype, mixin);
+	});
+
 	const game = new Game();
 	App.game = game;
 	// Global reference for event handlers that use window.game
@@ -163,9 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	stopBtn.addEventListener('click', ()=>{
 		stopSequentially();
 	});
-
-	// Global function: enable battle buttons (delegates to App)
-	window.enableBattleButtons = App.enableBattleButtons.bind(App);
 
 	// 簡單的輸入處理（保留用戶原本的指令輸入框功能）
 	button.addEventListener('click', function() {

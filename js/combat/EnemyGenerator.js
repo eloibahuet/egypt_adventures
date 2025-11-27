@@ -1,33 +1,6 @@
 // ===== EnemyGenerator.js - Item Generation & Loot Utilities =====
 // Handles item cloning with rarity scaling and pyramid affixes
-// Dependencies: QUALITY_BONUS, PYRAMID_AFFIXES (from data.js)
-
-/**
- * Standard rarities in order
- */
-const RARITIES = ['common', 'rare', 'excellent', 'epic', 'legendary'];
-
-/**
- * Rarity scale multipliers for attribute scaling
- */
-const RARITY_SCALE = {
-    common: 1,
-    rare: 1.8,
-    excellent: 1.5,
-    epic: 2.2,
-    legendary: 3.0
-};
-
-/**
- * Bonus count by rarity for quality bonuses
- */
-const BONUS_COUNT_BY_RARITY = {
-    common: 0,
-    rare: 2,
-    excellent: 1,
-    epic: 3,
-    legendary: 4
-};
+// Dependencies: RARITIES, RARITY_SCALE, BONUS_COUNT_BY_RARITY, QUALITY_BONUS, PYRAMID_AFFIXES (from data.js)
 
 /**
  * Pick a rarity based on weighted probabilities
@@ -97,4 +70,3 @@ function cloneItem(base, rarity, isPyramid = false) {
 // Expose globally for other modules
 window.cloneItem = cloneItem;
 window.pickWeightedRarity = pickWeightedRarity;
-window.RARITIES = RARITIES;
