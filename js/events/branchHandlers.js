@@ -9,7 +9,8 @@ const BranchHandlers = {
 
     treasure_drop() {
         showMessage(t('branchTreasureDrop'));
-        this.gainGold(Math.floor(50 * this.difficulty * (1 + Math.random())));
+        const gold = Math.floor(50 * this.difficulty * (1 + Math.random()));
+        this.player.gold += gold;
     },
 
     ally_join() {
@@ -25,13 +26,13 @@ const BranchHandlers = {
     epic_loot() {
         showMessage(t('branchEpicLoot'));
         const epicItem = generateItem('epic', this.difficulty);
-        this.inventory.push(epicItem);
+        this.player.inventory.push(epicItem);
     },
 
     curse() {
         showMessage(t('branchCurse'));
-        this.max_hp = Math.floor(this.max_hp * 0.9);
-        this.hp = Math.min(this.hp, this.max_hp);
+        this.player.max_hp = Math.floor(this.player.max_hp * 0.9);
+        this.player.hp = Math.min(this.player.hp, this.player.max_hp);
     },
 
     power_surge() {
@@ -47,8 +48,8 @@ const BranchHandlers = {
     legendary_loot() {
         showMessage(t('branchLegendaryLoot'));
         const legendItem = generateItem('epic', this.difficulty + 2);
-        this.inventory.push(legendItem);
-        this.gainGold(200 * this.difficulty);
+        this.player.inventory.push(legendItem);
+        this.player.gold += 200 * this.difficulty;
     },
 
     god_blessing() {
@@ -59,7 +60,7 @@ const BranchHandlers = {
 
     ancient_power() {
         showMessage(t('branchAncientPower'));
-        this.base_atk += 5;
+        this.player.base_atk += 5;
     },
 
     hidden_passage() {
@@ -80,14 +81,14 @@ const BranchHandlers = {
 
     healing_spring() {
         showMessage(t('branchHealingSpring'));
-        this.hp = this.max_hp;
+        this.player.hp = this.player.max_hp;
     },
 
     hidden_treasure() {
         showMessage(t('branchHiddenTreasure'));
-        this.gainGold(100 * this.difficulty);
+        this.player.gold += 100 * this.difficulty;
         const treasure = generateItem('rare', this.difficulty);
-        this.inventory.push(treasure);
+        this.player.inventory.push(treasure);
     },
 
     desert_guide() {
@@ -102,7 +103,7 @@ const BranchHandlers = {
 
     secret_chamber() {
         showMessage(t('branchSecretChamber'));
-        this.gainGold(300 * this.difficulty);
+        this.player.gold += 300 * this.difficulty;
     },
 
     divine_trial() {
@@ -112,7 +113,7 @@ const BranchHandlers = {
 
     double_loot() {
         showMessage(t('branchDoubleLoot'));
-        this.gainGold(200 * this.difficulty);
+        this.player.gold += 200 * this.difficulty;
     },
 
     curse_item() {
@@ -120,7 +121,7 @@ const BranchHandlers = {
         const cursedItem = generateItem('epic', this.difficulty);
         cursedItem.name = '詛咒的' + cursedItem.name;
         cursedItem.cursed = true;
-        this.inventory.push(cursedItem);
+        this.player.inventory.push(cursedItem);
     },
 
     revenge_quest() {
@@ -130,6 +131,6 @@ const BranchHandlers = {
 
     quicksand() {
         showMessage(t('branchQuicksand'));
-        this.gold = Math.max(0, this.gold - 50 * this.difficulty);
+        this.player.gold = Math.max(0, this.player.gold - 50 * this.difficulty);
     }
 };

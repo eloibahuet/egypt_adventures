@@ -343,64 +343,30 @@ const NavigationMixin = {
 
 	/**
 	 * Handle event dispatch
-	 * @param {string} event - Event type
+	 * @param {string} event - Event type (snake_case)
 	 */
 	handleEvent(event) {
-		// Combat events stay in Game class
+		// Combat events handled directly via battle()
 		if (event === 'monster' || event === 'elite' || event === 'mini_boss') {
 			this.battle(event);
 			return;
 		}
-
-		// Event name to handler name mapping
-		const eventMap = {
-			'merchant': 'merchant',
-			'black_market': 'blackMarket',
-			'oasis': 'oasis',
-			'sandstorm': 'sandstorm',
-			'egyptian_god': 'godEvent',
-			'pyramid': 'pyramid',
-			'buried_treasure': 'buriedTreasure',
-			'dead_traveler': 'deadTraveler',
-			'ancient_shrine': 'ancientShrine',
-			'caravan_rest': 'caravanRest',
-			'mirage': 'mirage',
-			'nomad_camp': 'nomadCamp',
-			'quicksand': 'quicksand',
-			'scorpion_nest': 'scorpion',
-			'ancient_ruins': 'ancientRuins',
-			'mysterious_stranger': 'mysteriousStranger',
-			'trading_post': 'tradingPost',
-			'lost_merchant': 'lostMerchant',
-			'cursed_shrine': 'cursedShrine',
-			'bandit_ambush': 'banditAmbush',
-			'ancient_puzzle': 'ancientPuzzle',
-			'desert_oasis': 'desertOasis',
-			'sandstorm_shelter': 'sandstormShelter',
-			'wandering_alchemist': 'wanderingAlchemist',
-			'ancient_tablet': 'ancientTablet',
-			'beast_pack': 'beastPack',
-			'moonlight_altar': 'moonlightAltar',
-			'caravan_wreckage': 'caravanWreckage',
-			'empty': 'emptyEvent'
-		};
 
 		// Special case: caravan_rest sets a flag
 		if (event === 'caravan_rest') {
 			this.hasEncounteredCaravanRest = true;
 		}
 
-		const handlerName = eventMap[event];
-
-		// Try EventHandlers first (for migrated events)
-		if (handlerName && typeof EventHandlers !== 'undefined' && EventHandlers[handlerName]) {
-			EventHandlers[handlerName].call(this);
+		// Try EventRegistry first (new system)
+		if (typeof EventRegistry !== 'undefined' && EventRegistry.triggerEvent(this, event)) {
 			return;
 		}
 
-		// Fallback to Game class methods (for non-migrated events)
-		if (handlerName && typeof this[handlerName] === 'function') {
-			this[handlerName]();
+		// Fallback to Game class methods (for blackMarket, tradingPost, etc.)
+		// Convert snake_case to camelCase for method lookup
+		const methodName = event.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+		if (typeof this[methodName] === 'function') {
+			this[methodName]();
 			return;
 		}
 

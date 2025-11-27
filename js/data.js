@@ -1,8 +1,7 @@
 // ===== 遊戲資料常數 =====
 
-// 事件列表與權重
-const EVENTS = ['monster', 'elite', 'mini_boss', 'merchant', 'black_market', 'oasis', 'sandstorm', 'egyptian_god', 'pyramid', 'buried_treasure', 'dead_traveler', 'ancient_shrine', 'caravan_rest', 'mirage', 'nomad_camp', 'quicksand', 'scorpion_nest', 'ancient_ruins', 'mysterious_stranger', 'trading_post', 'empty', 'lost_merchant', 'cursed_shrine', 'bandit_ambush', 'ancient_puzzle', 'desert_oasis', 'sandstorm_shelter', 'wandering_alchemist', 'ancient_tablet', 'beast_pack', 'moonlight_altar', 'caravan_wreckage'];
-const EVENT_WEIGHTS = [22,8,4,7,4,6,8,4,6,6,6,5,8,4,5,5,4,5,4,6,2,4,4,6,5,5,5,5,4,6,4,5];
+// Note: Event definitions moved to js/events/ modules (registry.js, travel.js, etc.)
+// Events are now registered via EventRegistry.register() in each domain file
 
 // 敵人圖片 Mapping
 const ENEMY_IMAGE_MAP = {
@@ -153,16 +152,7 @@ const SYMBOL_WEIGHTS = {
 	'💰': 2
 };
 
-// 事件選擇函數
-function chooseEvent() {
-	const total = EVENT_WEIGHTS.reduce((a,b)=>a+b,0);
-	let r = Math.random() * total;
-	for (let i=0,acc=0;i<EVENT_WEIGHTS.length;i++){
-		acc += EVENT_WEIGHTS[i];
-		if (r < acc) return EVENTS[i];
-	}
-	return 'empty';
-}
+// Note: chooseEvent() is now provided by EventRegistry in js/events/registry.js
 
 // 加權符號選擇函數
 function pickWeightedSymbol() {
