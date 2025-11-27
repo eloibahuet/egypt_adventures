@@ -61,6 +61,13 @@ const QUALITY_BONUS = {
 			{ combo_rate: 18, skill_power: 25 },
 			{ crit_rate: 15, combo_rate: 20 },
 			{ skill_power: 30, combo_rate: 15 }
+		],
+		legendary: [ // 傳說：4個額外屬性
+			{ crit_rate: 20, combo_rate: 25, skill_power: 35, atk: 8 },
+			{ crit_rate: 25, combo_rate: 30, skill_power: 40, dodge_rate: 10 },
+			{ crit_rate: 22, combo_rate: 28, atk: 10, max_hp_bonus: 30 },
+			{ skill_power: 50, crit_rate: 18, combo_rate: 22, luck_combat: 3 },
+			{ combo_rate: 35, crit_rate: 20, skill_power: 30, stamina_bonus: 25 }
 		]
 	},
 	armor: {
@@ -79,6 +86,13 @@ const QUALITY_BONUS = {
 			{ stamina_bonus: 25, dodge_rate: 12 },
 			{ max_hp_bonus: 40, dodge_rate: 8 },
 			{ dodge_rate: 15, stamina_bonus: 30 }
+		],
+		legendary: [ // 傳說：4個額外屬性
+			{ max_hp_bonus: 60, stamina_bonus: 40, dodge_rate: 18, def: 8 },
+			{ max_hp_bonus: 50, dodge_rate: 20, stamina_bonus: 35, luck_combat: 2 },
+			{ dodge_rate: 25, max_hp_bonus: 45, def: 10, stamina_bonus: 30 },
+			{ stamina_bonus: 50, max_hp_bonus: 55, dodge_rate: 15, atk: 5 },
+			{ max_hp_bonus: 70, dodge_rate: 18, stamina_bonus: 35, skill_power: 15 }
 		]
 	},
 	amulet: {
@@ -96,6 +110,13 @@ const QUALITY_BONUS = {
 			{ luck_gold: 2, atk: 4 },
 			{ atk: 5, def: 5 },
 			{ max_hp_bonus: 35, def: 3 }
+		],
+		legendary: [ // 傳說：4個額外屬性
+			{ luck_combat: 4, luck_gold: 4, atk: 6, def: 6 },
+			{ luck_combat: 3, max_hp_bonus: 50, atk: 8, crit_rate: 12 },
+			{ luck_gold: 4, atk: 10, def: 8, skill_power: 20 },
+			{ atk: 12, def: 10, max_hp_bonus: 40, dodge_rate: 12 },
+			{ max_hp_bonus: 60, luck_combat: 3, luck_gold: 3, stamina_bonus: 30 }
 		]
 	}
 };
