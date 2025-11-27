@@ -1,18 +1,18 @@
 // ===== 主程式 (UI 初始化與遊戲邏輯) =====
-// 依賴: js/data.js, js/music.js, js/enemyNames.js, i18n.js
+// 依賴: js/core/App.js, js/core/GameState.js, js/data.js, js/music.js, js/enemyNames.js, i18n.js
 
 document.addEventListener('DOMContentLoaded', function() {
-	const output = document.getElementById('game-output');
+	// Initialize App singleton
+	App.init();
+
+	const output = App.elements.output;
 	const input = document.getElementById('game-input');
 	const button = document.getElementById('submit-btn');
-	const spinBtn = document.getElementById('spin-btn');
-	const stopBtn = document.getElementById('stop-btn');
+	const spinBtn = App.elements.spinBtn;
+	const stopBtn = App.elements.stopBtn;
 
-	// 讀取並暴露版本號（從 index.html 的 #version-display）
-	const _versionEl = document.getElementById('version-display');
-	const APP_VERSION = _versionEl ? _versionEl.textContent.trim() : 'Version 1.0.0';
-	window.APP_VERSION = APP_VERSION; // 全域可取用
-	console.log('App Version:', APP_VERSION);
+	// Legacy compatibility - expose version globally
+	window.APP_VERSION = App.version;
 	
 	// 初始化音樂系統
 	MusicSystem.init();
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// 初始不允許旋轉，直到玩家選擇移動方向
 	spinBtn.disabled = true;
-	const reels = [document.getElementById('reel-0'), document.getElementById('reel-1'), document.getElementById('reel-2')];
+	const reels = App.elements.reels;
 
 	// Early slot machine module initialization (before populateReels)
 	// Game will be passed later after it's created
@@ -58,19 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// EVENTS, EVENT_WEIGHTS, ENEMY_IMAGE_MAP, chooseEvent 已移至 js/data.js
 
-	function showMessage(msg) {
-		// 新增一個訊息節點，並確保只保留最新20條
-		const node = document.createElement('div');
-		node.innerHTML = msg; // 使用 innerHTML 以支援 HTML 標籤（如顏色）
-		output.appendChild(node);
-		// 若超過20則，移除最舊的
-		while (output.children.length > 20) {
-			output.removeChild(output.firstChild);
-		}
-		// 自動捲動到最底
-		output.scrollTop = output.scrollHeight;
-	}
-	// Expose showMessage globally for event handlers
+	// Local alias for App.showMessage
+	const showMessage = App.showMessage.bind(App);
+	// Global access via App singleton
 	window.showMessage = showMessage;
 
 	// SYMBOLS, SYMBOL_WEIGHTS, pickWeightedSymbol, getSymbolHeight, getHighlightTop 已移至 js/data.js
@@ -1886,6 +1876,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	const game = new Game();
+	App.game = game;
+	// Global reference for event handlers that use window.game
+	window.game = game;
 
 	// Update slot machine module with game reference
 	if (typeof initSlotMachine === 'function') {
@@ -1893,12 +1886,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	game.updateStatus();
-
-	// 顯示初始方向提示
 	game.generateDirectionHints();
-
-	// 全局遊戲引用
-	window.game = game;
 
 	// Initialize debug system
 	if (typeof DebugSystem !== 'undefined') {
@@ -1913,297 +1901,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}, 500);
 	}
 
-	// 控制旋轉的 interval
-	// NOTE: These local slot machine functions use closure variables and shadow the module's global functions.
-	// They are kept for backward compatibility. See js/slotMachine.js for the modular version.
-	const reelState = reels.map(()=>({interval:null, spinning:false}));
+	// Slot machine functions are provided by js/slotMachine.js module
+	// (startSpin, stopSequentially, stopAutoSpinLoop, startAutoSpinLoop, toggleAutoSpin)
 
-// 自動旋轉控制
-let autoSpin = false;
-let autoSpinTimer = null;
-let autoSpinTimer2 = null; // 用於追蹤嵌套的第二個 timeout
-let autoSpinActive = false;
-
-function stopAutoSpinLoop() {
-	autoSpin = false;
-	// 清除所有可能的 timeout
-	if (autoSpinTimer) { clearTimeout(autoSpinTimer); autoSpinTimer = null; }
-	if (autoSpinTimer2) { clearTimeout(autoSpinTimer2); autoSpinTimer2 = null; }
-	autoSpinActive = false;
-	const btn = document.getElementById('auto-spin-btn'); 
-	if (btn) {
-		btn.textContent = '自動旋轉';
-		// 強制移除可能的啟用狀態樣式
-		btn.style.background = '';
-		btn.classList.remove('active');
-	}
-}
-
-function runAutoCycle() {
-	// 每次執行前先檢查戰鬥狀態和 autoSpin 標記
-	if (!autoSpin || !game.inBattle) { 
-		autoSpinActive = false; 
-		stopAutoSpinLoop();
-		return; 
-	}
-	if (stopBtn && !stopBtn.disabled) {
-		// currently stopping; schedule next attempt
-		autoSpinTimer = setTimeout(runAutoCycle, 300);
-		return;
-	}
-	if (!spinBtn.disabled && game.inBattle) {
-		// 開始一次手動點擊流程（再次確認戰鬥狀態）
-		spinBtn.click();
-		const delay = 800 + Math.floor(Math.random()*600);
-		autoSpinTimer = setTimeout(()=>{
-			// 再次檢查是否需要停止
-			if (!autoSpin || !game.inBattle) {
-				stopAutoSpinLoop();
-				return;
-			}
-			// 確保還在戰鬥中才點擊停止
-			if (!stopBtn.disabled && game.inBattle) stopBtn.click();
-			// schedule next cycle after slight pause to allow results
-			autoSpinTimer2 = setTimeout(()=>{
-				// 第三次檢查
-				if (!autoSpin || !game.inBattle) {
-					stopAutoSpinLoop();
-					return;
-				}
-				runAutoCycle();
-			}, 400);
-		}, delay);
-	} else {
-		// 無法旋轉或不在戰鬥中，停止自動旋轉
-		if (!game.inBattle) {
-			stopAutoSpinLoop();
-		} else {
-			// 稍後重試
-			autoSpinTimer = setTimeout(runAutoCycle, 500);
-		}
-	}
-}
-
-function startAutoSpinLoop() {
-	if (autoSpinActive) return;
-	autoSpinActive = true;
-	runAutoCycle();
-}
-
-	function startSpin() {
-		// 以快速改變 translateY 來模擬連續旋轉
-		// 使用動態符號高度以適配不同螢幕尺寸
-		const symbolHeight = getSymbolHeight();
-		for (let i = 0; i < reels.length; i++) {
-			const strip = reels[i].querySelector('.strip');
-			if (!strip) continue;
-			reelState[i].spinning = true;
-			// 使用 requestAnimationFrame loop 來改變位置
-			let speed = 30 + Math.random()*20; // px per frame-ish
-			reelState[i].anim = {pos: parseFloat(strip.style.transform.replace(/[^-0-9.]/g,'')) || 0, speed};
-			const loop = () => {
-				if (!reelState[i].spinning) return;
-				reelState[i].anim.pos += reelState[i].anim.speed;
-				// 當 pos 超過一整組長度，回繞（使用動態符號高度）
-				const totalHeight = SYMBOLS.length * symbolHeight * 8; // repeats
-				if (reelState[i].anim.pos >= totalHeight) reelState[i].anim.pos -= totalHeight;
-				strip.style.transform = `translateY(-${reelState[i].anim.pos}px)`;
-				strip.style.webkitTransform = `translateY(-${reelState[i].anim.pos}px)`;
-				reelState[i].raf = requestAnimationFrame(loop);
-			};
-			reelState[i].raf = requestAnimationFrame(loop);
-		}
-	}
-
-	function stopSequentially() {
-		// 禁用 stop 按鈕，依序停止每一軸
-		stopBtn.disabled = true;
-		const results = [];
-		
-		// 統一的停止函數，確保符號精確對齊
-		const stopReel = (index, withAnimation = true) => {
-			return new Promise((resolve) => {
-				// 隨機選擇一個符號作為目標
-				const targetSymbol = pickWeightedSymbol();
-				const strip = reels[index].querySelector('.strip');
-				
-				// 停止 spinning loop
-				reelState[index].spinning = false;
-				if (reelState[index].raf) cancelAnimationFrame(reelState[index].raf);
-
-				// 找到目標符號在 SYMBOLS 陣列中的索引
-				const symbolIndex = SYMBOLS.indexOf(targetSymbol);
-				if (symbolIndex === -1) {
-					console.error(`Symbol ${targetSymbol} not found in SYMBOLS array`);
-					resolve();
-					return;
-				}
-				
-				// 計算目標位置（動態適配不同螢幕尺寸）
-				// strip 中有 8 個重複的 SYMBOLS 陣列
-				// 使用第 3 個循環（中間位置）來確保符號在可視範圍內
-				const symbolHeight = getSymbolHeight();
-				const highlightTop = getHighlightTop();
-				const singleBlock = SYMBOLS.length * symbolHeight; // 動態計算單個循環長度
-				const targetCycle = 3; // 使用第 3 個循環
-				
-				// 目標位置計算：符號頂部對齊到高亮框頂部
-				// strip 移動到 cycle × singleBlock + index × symbolHeight - highlightTop
-				const targetPos = targetCycle * singleBlock + symbolIndex * symbolHeight - highlightTop;
-				
-				// 偵測螢幕資訊
-				const screenWidth = window.innerWidth;
-				const isMobile = screenWidth <= 600;
-				const isTinyScreen = screenWidth <= 400;
-				
-				console.log(`Reel ${index}: Target=${targetSymbol}, symbolIndex=${symbolIndex}, targetPos=${targetPos}px, symbolHeight=${symbolHeight}px, highlightTop=${highlightTop}px, mobile=${isMobile}, tiny=${isTinyScreen}, screenWidth=${screenWidth}`);
-				
-				if (withAnimation) {
-					// 第一個輪軸：帶動畫
-					const currentPos = reelState[index].anim ? reelState[index].anim.pos : 0;
-					const duration = 1000 + Math.random() * 500;
-					const start = performance.now();
-					
-					const animate = (now) => {
-						const t = Math.min(1, (now - start) / duration);
-						const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
-						const pos = currentPos + (targetPos - currentPos) * ease;
-						strip.style.transform = `translateY(-${pos}px)`;
-						strip.style.webkitTransform = `translateY(-${pos}px)`;
-						
-						if (t < 1) {
-							requestAnimationFrame(animate);
-						} else {
-							// 動畫結束，強制設定精確位置（包括 webkit 前綴）
-							strip.style.transform = `translateY(-${targetPos}px)`;
-							strip.style.webkitTransform = `translateY(-${targetPos}px)`;
-							results[index] = targetSymbol;
-							console.log(`Reel ${index}: Animation complete, final position=${targetPos}px, symbol=${targetSymbol}`);
-							setTimeout(resolve, 50);
-						}
-					};
-					requestAnimationFrame(animate);
-				} else {
-					// 第二、三個輪軸：快速停止
-					strip.style.transition = 'transform 0.3s ease-out';
-					strip.style.webkitTransition = '-webkit-transform 0.3s ease-out';
-					strip.style.transform = `translateY(-${targetPos}px)`;
-					strip.style.webkitTransform = `translateY(-${targetPos}px)`;
-					
-					setTimeout(() => {
-						strip.style.transition = '';
-						strip.style.webkitTransition = '';
-						// 再次確認位置（包括 webkit 前綴）
-						strip.style.transform = `translateY(-${targetPos}px)`;
-						strip.style.webkitTransform = `translateY(-${targetPos}px)`;
-						results[index] = targetSymbol;
-						console.log(`Reel ${index}: Quick stop complete, final position=${targetPos}px, symbol=${targetSymbol}`);
-						resolve();
-					}, 350);
-				}
-			});
-		};
-
-		// 依序停止三個輪軸
-		stopReel(0, true).then(() => {
-			return Promise.all([
-				stopReel(1, false),
-				stopReel(2, false)
-			]);
-		}).then(() => {
-			// 等待 DOM 完全更新
-			return new Promise(resolve => setTimeout(resolve, 100));
-		}).then(() => {
-			// 驗證結果並顯示位置資訊
-			console.log('=== Final verification ===');
-			let positionInfo = '';
-			for (let i = 0; i < 3; i++) {
-				const strip = reels[i].querySelector('.strip');
-				if (strip) {
-					// 取得 transform 的實際計算值，支援 translateY(...)、matrix(...) 與 matrix3d(...)
-					const comp = window.getComputedStyle(strip).transform || strip.style.transform || '';
-					let currentPos = 0;
-					if (comp.startsWith('matrix3d')) {
-						// matrix3d(a1,...,a16) --> ty 在第 14 個位置（index 13）
-						const nums = comp.match(/matrix3d\(([^)]+)\)/);
-						if (nums && nums[1]) {
-							const vals = nums[1].split(',').map(s => parseFloat(s.trim()));
-							if (vals.length >= 14 && !isNaN(vals[13])) currentPos = Math.round(Math.abs(vals[13]));
-						}
-					} else if (comp.startsWith('matrix')) {
-						// matrix(a, b, c, d, tx, ty)
-						const nums = comp.match(/matrix\(([^)]+)\)/);
-						if (nums && nums[1]) {
-							const vals = nums[1].split(',').map(s => parseFloat(s.trim()));
-							if (vals.length >= 6 && !isNaN(vals[5])) currentPos = Math.round(Math.abs(vals[5]));
-						}
-					} else {
-						// 其他情況（如 translateY(-123px)），使用 regex 抽取數字
-						const m = comp.match(/-?[\d.]+/g);
-						if (m && m.length > 0) {
-							currentPos = parseFloat(m[m.length - 1]);
-							// translateY 用負值表示，上面邏輯期望正數
-							currentPos = Math.abs(currentPos);
-						} else {
-							currentPos = 0;
-						}
-					}
-					
-					// 動態獲取當前螢幕的符號高度和高亮框位置
-					const symbolHeight = getSymbolHeight();
-					const highlightTop = getHighlightTop();
-					
-					// 計算符號在高亮框中的索引
-					// strip 位置 = cycle × singleBlock + symbolIndex × symbolHeight - highlightTop
-					// 反推：symbolIndex = ((currentPos + highlightTop) / symbolHeight) % SYMBOLS.length
-					const symbolIndexInView = (Math.round((currentPos + highlightTop) / symbolHeight) % SYMBOLS.length + SYMBOLS.length) % SYMBOLS.length;
-					const expectedSymbol = SYMBOLS[symbolIndexInView];
-					
-					console.log(`Reel ${i}: pos=${currentPos}px, symbolHeight=${symbolHeight}px, highlightTop=${highlightTop}px, symbolIndex=${symbolIndexInView}, expected=${expectedSymbol}, actual=${results[i]}`);
-					positionInfo += `\n輪${i+1}: ${currentPos}px (H:${symbolHeight}) → ${results[i]}`;
-					
-					// 檢查對齊（使用動態符號高度）
-					const alignedPos = Math.round((currentPos + highlightTop) / symbolHeight) * symbolHeight - highlightTop;
-					// 在行動裝置上允許更大的容差（3px），以避免子像素或 matrix 計算誤差導致誤判
-					if (Math.abs(currentPos - alignedPos) > 3) {
-						console.warn(`Reel ${i}: Misaligned! Current=${currentPos}, should be=${alignedPos}, symbolHeight=${symbolHeight}`);
-					}
-				}
-			}
-			
-			// 確保結果陣列完整
-			console.log('Final results array:', results);
-			if (results.length !== 3 || results.some(r => !r)) {
-				console.error('Results array is incomplete:', results);
-				// 如果結果不完整，使用 targetSymbols 作為備用
-				for (let i = 0; i < 3; i++) {
-					if (!results[i]) results[i] = targetSymbols[i] || '⚔️';
-				}
-			}
-
-			showMessage(`插槽結果： ${results.join(' | ')}`);
-			
-			// 把結果傳給遊戲邏輯進行處理（attack/skill/defend/enemy）
-			try {
-				game.applySlotResults(results);
-			} catch (e) {
-				console.error(e);
-			}
-			
-			// 檢查戰鬥是否已結束，如果已結束則停止自動旋轉
-			if (!game.inBattle) {
-				try { stopAutoSpinLoop(); } catch(e) {}
-			}
-			
-			// 啟用 spin（如果還在戰鬥中）
-			if (game.inBattle) {
-				spinBtn.disabled = false;
-			}
-			stopBtn.disabled = true;
-		});
-	}
-	
-	// 事件
+	// Slot button event listeners
 	spinBtn.addEventListener('click', ()=>{
 		if (!game.inBattle) {
 			showMessage('目前不在戰鬥中，無法使用旋轉。');
@@ -2219,14 +1920,8 @@ function startAutoSpinLoop() {
 		stopSequentially();
 	});
 
-	// 全局函數：啟用戰鬥按鈕
-	window.enableBattleButtons = function() {
-		if (game.inBattle) {
-			spinBtn.disabled = false;
-			const autoBtn = document.getElementById('auto-spin-btn');
-			if (autoBtn) autoBtn.disabled = false;
-		}
-	};
+	// Global function: enable battle buttons (delegates to App)
+	window.enableBattleButtons = App.enableBattleButtons.bind(App);
 
 	// 簡單的輸入處理（保留用戶原本的指令輸入框功能）
 	button.addEventListener('click', function() {
@@ -2240,20 +1935,15 @@ function startAutoSpinLoop() {
 		if (e.key === 'Enter') button.click();
 	});
 
-	// 移動按鈕
-	const moveFront = document.getElementById('move-front');
-	const moveLeft = document.getElementById('move-left');
-	const moveRight = document.getElementById('move-right');
-	if (moveFront) moveFront.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('前'); });
-	if (moveLeft) moveLeft.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('左'); });
-	if (moveRight) moveRight.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('右'); });
+	// Movement buttons (using DOMRefs)
+	if (DOMRefs.moveFront) DOMRefs.moveFront.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('前'); });
+	if (DOMRefs.moveLeft) DOMRefs.moveLeft.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('左'); });
+	if (DOMRefs.moveRight) DOMRefs.moveRight.addEventListener('click', ()=> { if (game.inBattle) { showMessage('目前在戰鬥中，無法移動。'); return; } game.moveStep('右'); });
 
-	// 裝備按鈕行為
-	const closeEquip = document.getElementById('close-equip');
-	if (closeEquip) {
-		closeEquip.addEventListener('click', ()=> { 
-			const p = document.getElementById('equipment-panel'); 
-			if (p) p.style.display = 'none'; 
+	// Equipment panel close button
+	if (DOMRefs.closeEquipBtn) {
+		DOMRefs.closeEquipBtn.addEventListener('click', ()=> {
+			if (DOMRefs.equipmentPanel) DOMRefs.equipmentPanel.style.display = 'none';
 		});
 	}
 
@@ -2283,78 +1973,64 @@ function startAutoSpinLoop() {
 			}
 		}, false);
 
-	// 自動旋轉與逃跑按鈕綁定
-	const autoBtn = document.getElementById('auto-spin-btn');
-	if (autoBtn) {
-		autoBtn.addEventListener('click', ()=>{
+	// Auto-spin and flee buttons (using DOMRefs)
+	if (DOMRefs.autoSpinBtn) {
+		DOMRefs.autoSpinBtn.addEventListener('click', ()=>{
 			if (!game.inBattle) {
 				showMessage('目前不在戰鬥中，無法使用自動旋轉。');
 				return;
 			}
-			autoSpin = !autoSpin;
-			autoBtn.textContent = autoSpin ? '停止自動' : '自動旋轉';
-			if (autoSpin) startAutoSpinLoop(); else stopAutoSpinLoop();
+			const isAuto = toggleAutoSpin();
+			DOMRefs.autoSpinBtn.textContent = isAuto ? '停止自動' : '自動旋轉';
 		});
 	}
-	const fleeBtn = document.getElementById('flee-btn');
-	if (fleeBtn) {
-		fleeBtn.addEventListener('click', ()=>{ game.attemptFlee(); });
+	if (DOMRefs.fleeBtn) {
+		DOMRefs.fleeBtn.addEventListener('click', ()=>{ game.attemptFlee(); });
 	}
 
-	// 音樂控制按鈕
-	const musicToggle = document.getElementById('music-toggle');
-	const volumeSlider = document.getElementById('volume-slider');
-	
-	if (musicToggle) {
-		musicToggle.addEventListener('click', ()=> {
+	// Music control buttons (using DOMRefs)
+	if (DOMRefs.musicToggle) {
+		DOMRefs.musicToggle.addEventListener('click', ()=> {
 			MusicSystem.toggle();
-			updateUILanguage(); // 更新按鈕文字的多語言
+			updateUILanguage();
 		});
 	}
-	
-	if (volumeSlider) {
-		volumeSlider.addEventListener('input', (e) => {
+
+	if (DOMRefs.volumeSlider) {
+		DOMRefs.volumeSlider.addEventListener('input', (e) => {
 			MusicSystem.setVolume(e.target.value);
-			const volumeDisplay = document.getElementById('volume-display');
-			if (volumeDisplay) {
-				volumeDisplay.textContent = e.target.value + '%';
+			if (DOMRefs.volumeDisplay) {
+				DOMRefs.volumeDisplay.textContent = e.target.value + '%';
 			}
 		});
 	}
 
-	// 定期檢查戰鬥狀態，確保自動旋轉在戰鬥結束時停止
+	// Periodic check to ensure auto-spin stops when battle ends
 	setInterval(() => {
-		if (!game.inBattle && autoSpin) {
-			console.log('檢測到戰鬥已結束但自動旋轉未停止，強制停止');
+		if (!game.inBattle && isAutoSpinning()) {
+			console.log('Battle ended but auto-spin still running, stopping');
 			stopAutoSpinLoop();
 		}
-	}, 500); // 每500ms檢查一次
+	}, 500);
 
-	// 儲存/讀取功能 (using PersistenceMixin)
-	const saveBtn = document.getElementById('save-btn');
-	const loadBtn = document.getElementById('load-btn');
-
-	if (saveBtn) {
-		saveBtn.addEventListener('click', () => {
+	// Save/Load buttons (using DOMRefs)
+	if (DOMRefs.saveBtn) {
+		DOMRefs.saveBtn.addEventListener('click', () => {
 			game.saveGame();
 		});
 	}
 
-	if (loadBtn) {
-		loadBtn.addEventListener('click', () => {
+	if (DOMRefs.loadBtn) {
+		DOMRefs.loadBtn.addEventListener('click', () => {
 			const data = game.loadGame();
 			if (data) {
 				// Update UI state based on battle status
 				if (game.inBattle) {
-					spinBtn.disabled = false;
-					const autoBtn = document.getElementById('auto-spin-btn');
-					if (autoBtn) autoBtn.disabled = false;
-					if (game.disableMovementButtons) game.disableMovementButtons();
+					DOMRefs.enableBattle();
+					DOMRefs.disableMovement();
 				} else {
-					spinBtn.disabled = true;
-					const autoBtn = document.getElementById('auto-spin-btn');
-					if (autoBtn) autoBtn.disabled = true;
-					if (game.enableMovementButtons) game.enableMovementButtons();
+					DOMRefs.disableBattle();
+					DOMRefs.enableMovement();
 				}
 			}
 		});
