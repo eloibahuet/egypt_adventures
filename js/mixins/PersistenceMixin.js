@@ -13,6 +13,36 @@ const PersistenceMixin = {
 	SAVE_KEY: 'egypt_adventures_save',
 
 	/**
+	 * Required fields for a valid save
+	 */
+	REQUIRED_SAVE_FIELDS: ['player', 'enemy', 'map_steps', 'map_goal', 'difficulty'],
+
+	/**
+	 * Validate save data structure
+	 * @param {Object} data - Parsed save data
+	 * @returns {boolean} True if save data is valid
+	 */
+	validateSaveData(data) {
+		if (!data || typeof data !== 'object') return false;
+
+		// Check required top-level fields
+		for (const field of this.REQUIRED_SAVE_FIELDS) {
+			if (!(field in data)) {
+				console.warn(`Save validation: missing field "${field}"`);
+				return false;
+			}
+		}
+
+		// Check player object has essential properties
+		if (!data.player || typeof data.player.hp !== 'number' || typeof data.player.level !== 'number') {
+			console.warn('Save validation: invalid player data');
+			return false;
+		}
+
+		return true;
+	},
+
+	/**
 	 * Serialize current game state for saving
 	 * @returns {Object} Serialized game state
 	 */
@@ -94,8 +124,15 @@ const PersistenceMixin = {
 				return null;
 			}
 
-			console.log('Load data length:', saveData.length);
 			const data = JSON.parse(saveData);
+
+			// Validate save data structure
+			if (!this.validateSaveData(data)) {
+				showMessage('⚠️ 存檔資料損壞，將重新開始遊戲。');
+				console.error('Save data validation failed');
+				this.clearSaveGame();
+				return null;
+			}
 
 			// Restore game state
 			this.deserializeState(data);
@@ -107,7 +144,7 @@ const PersistenceMixin = {
 
 			return data;
 		} catch (e) {
-			showMessage('❌ 讀取失敗：' + e.message);
+			showMessage('⚠️ 存檔讀取失敗，將重新開始遊戲。');
 			console.error('Load error:', e);
 			return null;
 		}

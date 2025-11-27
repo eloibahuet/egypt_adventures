@@ -28,11 +28,20 @@ const EventRegistry = {
     // Trigger an event by name, with game instance as context
     triggerEvent(game, eventName) {
         const event = this.events[eventName];
-        if (event && typeof event.handler === 'function') {
+        if (!event || typeof event.handler !== 'function') {
+            console.warn(`Event not found or invalid: ${eventName}`);
+            return false;
+        }
+        try {
             event.handler.call(game);
             return true;
+        } catch (e) {
+            console.error(`Event handler failed: ${eventName}`, e);
+            if (typeof showMessage === 'function') {
+                showMessage(`⚠️ 事件執行發生錯誤`);
+            }
+            return false;
         }
-        return false;
     },
 
     // Check if an event exists

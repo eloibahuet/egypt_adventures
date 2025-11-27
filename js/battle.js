@@ -32,9 +32,7 @@ const BattleMixin = {
 		showMessage(`${t('encounterEnemyName')}${this.enemy.name}`);
 
 		// Disable movement buttons during battle
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = true;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = true;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = true;
+		DOMRefs.disableMovement();
 
 		// Adjust enemy HP and attack based on type
 		// Pyramid enemies scale with map difficulty: HP x(3+difficulty*0.5), ATK x(2.5+difficulty*0.3), strength x(1.5+difficulty*0.2)
@@ -107,19 +105,13 @@ const BattleMixin = {
 				MusicSystem.switchTrack('exploration');
 			}
 
-			const spinBtn = document.getElementById('spin-btn');
-			const stopBtn = document.getElementById('stop-btn');
-			if (spinBtn) spinBtn.disabled = true;
-			if (stopBtn) stopBtn.disabled = true;
+			DOMRefs.disableBattle();
 
 			// Stop auto-spin and disable auto button
 			try { stopAutoSpinLoop(); } catch(e) {}
-			const autoBtn = document.getElementById('auto-spin-btn');
-			if (autoBtn) autoBtn.disabled = true;
+			if (DOMRefs.autoSpinBtn) DOMRefs.autoSpinBtn.disabled = true;
 
-			const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
-			const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
-			const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
+			DOMRefs.enableMovement();
 			this.enemy.hp = 0;
 			this.updateStatus();
 		} else {
@@ -236,10 +228,7 @@ const BattleMixin = {
 		if (!this.inBattle && typeof stopAutoSpinLoop === 'function') {
 			try {
 				stopAutoSpinLoop();
-				const spinBtn = document.getElementById('spin-btn');
-				const stopBtn = document.getElementById('stop-btn');
-				if (spinBtn) spinBtn.disabled = true;
-				if (stopBtn) stopBtn.disabled = true;
+				DOMRefs.disableBattle();
 			} catch(e) {
 				console.error('強制停止自動旋轉失敗:', e);
 			}
@@ -437,15 +426,7 @@ const BattleMixin = {
 				}
 			}
 		} else {
-			// Normal map drops
-			const rarities = ['common','rare','excellent','epic','legendary'];
-			function pickWeightedRarity(weights) {
-				let total = weights.reduce((s,w)=>s+w,0);
-				let r = Math.random()*total; let acc = 0;
-				for (let i=0;i<weights.length;i++){ acc += weights[i]; if (r < acc) return rarities[i]; }
-				return 'common';
-			}
-
+			// Normal map drops (uses pickWeightedRarity from EnemyGenerator.js)
 			if (enemyTypeMultiplier === 3) { // mini_boss
 				const weights = [10,50,10,25,5];
 				const dropCount = 1 + Math.floor(Math.random() * 2);
@@ -506,23 +487,17 @@ const BattleMixin = {
 		}
 
 		// Disable battle buttons
-		const spinBtn = document.getElementById('spin-btn');
-		const stopBtn = document.getElementById('stop-btn');
-		if (spinBtn) spinBtn.disabled = true;
-		if (stopBtn) stopBtn.disabled = true;
+		DOMRefs.disableBattle();
 
 		// Disable and reset auto-spin button
-		const autoBtn = document.getElementById('auto-spin-btn');
-		if (autoBtn) {
-			autoBtn.disabled = true;
-			autoBtn.textContent = '自動旋轉';
-			autoBtn.style.background = '';
+		if (DOMRefs.autoSpinBtn) {
+			DOMRefs.autoSpinBtn.disabled = true;
+			DOMRefs.autoSpinBtn.textContent = '自動旋轉';
+			DOMRefs.autoSpinBtn.style.background = '';
 		}
 
 		// Enable movement buttons
-		const mf = document.getElementById('move-front'); if (mf) mf.disabled = false;
-		const ml = document.getElementById('move-left'); if (ml) ml.disabled = false;
-		const mr = document.getElementById('move-right'); if (mr) mr.disabled = false;
+		DOMRefs.enableMovement();
 
 		this.enemy.turnsToAttack = 3;
 
@@ -555,70 +530,15 @@ const BattleMixin = {
 				if (typeof MusicSystem !== 'undefined') {
 					MusicSystem.switchTrack('exploration');
 				}
-				const spinBtn = document.getElementById('spin-btn');
-				const stopBtn = document.getElementById('stop-btn');
-				if (spinBtn) spinBtn.disabled = true;
-				if (stopBtn) stopBtn.disabled = true;
-				const autoBtn = document.getElementById('auto-spin-btn');
-				if (autoBtn) {
-					autoBtn.disabled = true;
-					autoBtn.textContent = '自動旋轉';
-					autoBtn.style.background = '';
+				DOMRefs.disableBattle();
+				if (DOMRefs.autoSpinBtn) {
+					DOMRefs.autoSpinBtn.disabled = true;
+					DOMRefs.autoSpinBtn.textContent = '自動旋轉';
+					DOMRefs.autoSpinBtn.style.background = '';
 				}
 			}
 		}
 	}
 };
 
-/**
- * Clone item with rarity scaling and pyramid affixes
- * @param {Object} base - Base item template
- * @param {string} rarity - Item rarity
- * @param {boolean} isPyramid - Whether this is a pyramid item
- * @returns {Object} Cloned item with applied bonuses
- */
-function cloneItem(base, rarity, isPyramid = false) {
-	const it = Object.assign({}, base);
-	it.rarity = rarity;
-
-	// Scale attributes based on rarity (rare > excellent intentionally)
-	const _scale = rarity === 'rare' ? 1.8 : (rarity === 'excellent' ? 1.5 : (rarity === 'epic' ? 2.2 : (rarity === 'legendary' ? 3.0 : 1)));
-	if (it.atk) it.atk = Math.max(1, Math.round(it.atk * _scale));
-	if (it.def) it.def = Math.max(1, Math.round(it.def * _scale));
-	if (it.luck_gold) it.luck_gold = Math.max(1, Math.round(it.luck_gold * _scale));
-	if (it.luck_combat) it.luck_combat = Math.max(1, Math.round(it.luck_combat * _scale));
-	if (it.max_hp_bonus) it.max_hp_bonus = Math.max(1, Math.round(it.max_hp_bonus * _scale));
-
-	// Add quality bonuses based on rarity
-	const bonusCountByRarity = { common: 0, rare: 2, excellent: 1, epic: 3, legendary: 4 };
-	const bonusCount = bonusCountByRarity[rarity] || 0;
-	if (bonusCount > 0 && QUALITY_BONUS[it.slot] && QUALITY_BONUS[it.slot][rarity]) {
-		const pool = QUALITY_BONUS[it.slot][rarity].slice();
-		for (let n = 0; n < bonusCount && pool.length > 0; n++) {
-			const idx = Math.floor(Math.random() * pool.length);
-			const bonus = pool.splice(idx, 1)[0];
-			Object.assign(it, bonus);
-		}
-	}
-
-	// Add pyramid affix for non-common items
-	if (isPyramid && rarity !== 'common') {
-		const affix = PYRAMID_AFFIXES[Math.floor(Math.random() * PYRAMID_AFFIXES.length)];
-		it.affix = affix.id;
-		it.affixName = affix.name;
-		it.affixColor = affix.color;
-		for (const key in affix.bonus) {
-			if (it[key]) {
-				it[key] += affix.bonus[key];
-			} else {
-				it[key] = affix.bonus[key];
-			}
-		}
-		it.isPyramid = true;
-	}
-
-	return it;
-}
-
-// Expose cloneItem globally for other modules
-window.cloneItem = cloneItem;
+// cloneItem and pickWeightedRarity are now in js/combat/EnemyGenerator.js

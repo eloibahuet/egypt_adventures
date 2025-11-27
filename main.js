@@ -73,25 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	// 簡單遊戲狀態（玩家與敵人）
 	class Game {
 		constructor() {
-			this.player = { hp: 100, max_hp: 100, shield: 0, stamina: 50, max_stamina: 50, potions: 2, gold: 500, luck_combat: 0, luck_gold: 0, level: 1, xp: 0, inventory: [], equipment: { weapon: null, armor: null, amulet: null } };
-			this.enemy = { hp: 100, max_hp: 100, baseAttack: 10, turnsToAttack: 3 };
-			this.inBattle = false;
-			this.consecutivePrimarySymbol = null;
-			this.consecutivePrimaryCount = 0;
-			this.map_steps = 0;
-			this.map_goal = 30;
-			this.difficulty = 1;
-			// 金字塔副本相關狀態
-			this.inPyramid = false;
-			this.pyramidSteps = 0;
-			// 離開金字塔自動產生方向導引
-			if (typeof this.generateDirectionHints === 'function') {
-				this.generateDirectionHints();
-			}
-			this.pyramidMaxSteps = 8;
-			this.normalMapSteps = 0; // 儲存進入金字塔前的步數
-			// 驛站追蹤：確保每張地圖至少出現一次
-			this.hasEncounteredCaravanRest = false;
+			// Use GameState factories for consistent initialization
+			this.player = GameState.createPlayerState();
+			this.enemy = GameState.createEnemyState();
+			Object.assign(this, GameState.createGameFlags());
+			Object.assign(this, GameState.createMapState());
+			Object.assign(this, GameState.createComboState());
 		}
 
 		// All methods are provided by mixins:
