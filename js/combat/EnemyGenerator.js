@@ -1,22 +1,7 @@
 // ===== EnemyGenerator.js - Item Generation & Loot Utilities =====
 // Handles item cloning with rarity scaling and pyramid affixes
 // Dependencies: RARITIES, RARITY_SCALE, BONUS_COUNT_BY_RARITY, QUALITY_BONUS, PYRAMID_AFFIXES (from data.js)
-
-/**
- * Pick a rarity based on weighted probabilities
- * @param {number[]} weights - Array of 5 weights for [common, rare, excellent, epic, legendary]
- * @returns {string} Selected rarity
- */
-function pickWeightedRarity(weights) {
-    const total = weights.reduce((s, w) => s + w, 0);
-    let r = Math.random() * total;
-    let acc = 0;
-    for (let i = 0; i < weights.length; i++) {
-        acc += weights[i];
-        if (r < acc) return RARITIES[i];
-    }
-    return 'common';
-}
+// Note: pickWeightedRarity is now also available via Utils.pickWeightedRarity() in js/core/Utils.js
 
 /**
  * Clone item with rarity scaling and pyramid affixes

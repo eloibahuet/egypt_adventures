@@ -9,6 +9,50 @@
  */
 const BattleMixin = {
 	/**
+	 * Calculate scaled value with match count, triple bonus, and combo multiplier
+	 * @private
+	 */
+	_calcScaledValue(base, matchCount, tripleBonus, comboMultiplier) {
+		let value = base * matchCount;
+		value = Math.round(value * tripleBonus);
+		return Math.max(1, Math.round(value * comboMultiplier));
+	},
+
+	/**
+	 * Get weapon attribute safely
+	 * @private
+	 */
+	_getWeaponAttr(attr) {
+		return this.player.equipment.weapon ? (this.player.equipment.weapon[attr] || 0) : 0;
+	},
+
+	/**
+	 * Get armor attribute safely
+	 * @private
+	 */
+	_getArmorAttr(attr) {
+		return this.player.equipment.armor ? (this.player.equipment.armor[attr] || 0) : 0;
+	},
+
+	/**
+	 * Calculate crit chance based on luck and weapon
+	 * @private
+	 */
+	_calcCritChance() {
+		const weaponCritRate = this._getWeaponAttr('crit_rate');
+		return Math.min(0.75, 0.08 + 0.05 * this.player.luck_combat + weaponCritRate / 100);
+	},
+
+	/**
+	 * Calculate dodge chance based on luck and armor
+	 * @private
+	 */
+	_calcDodgeChance() {
+		const armorDodge = this._getArmorAttr('dodge_rate');
+		return Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodge / 100);
+	},
+
+	/**
 	 * Initiate battle with enemy
 	 * @param {string} type - Enemy type: 'monster', 'elite', or 'mini_boss'
 	 */
@@ -34,30 +78,36 @@ const BattleMixin = {
 		// Disable movement buttons during battle
 		DOMRefs.disableMovement();
 
-		// Adjust enemy HP and attack based on type
-		// Pyramid enemies scale with map difficulty: HP x(3+difficulty*0.5), ATK x(2.5+difficulty*0.3), strength x(1.5+difficulty*0.2)
-		// Non-pyramid: increased strength (+0.5) and doubled HP (x2)
-		let hpMultiplier = this.inPyramid ? (3.0 + this.difficulty * 0.5) : 2.0;
-		let atkMultiplier = this.inPyramid ? (2.5 + this.difficulty * 0.3) : 1.0;
-		let strengthBonus = this.inPyramid ? (1.5 + this.difficulty * 0.2) : 1.5;
+		// Get battle constants from Config
+		const B = Config.BATTLE;
 
-		if (type === 'elite') {
-			this.enemy.max_hp = Math.floor((150 + 20 * this.difficulty) * hpMultiplier);
-			this.enemy.baseAttack = Math.floor((15 + 5 * this.difficulty) * atkMultiplier);
-			this.enemy.strength = 1.6 * strengthBonus;
-		} else if (type === 'mini_boss') {
-			// Pyramid mini-boss difficulty reduced by 20%
-			const miniBossHpMult = this.inPyramid ? hpMultiplier * 0.8 : hpMultiplier;
-			const miniBossAtkMult = this.inPyramid ? atkMultiplier * 0.8 : atkMultiplier;
-			const miniBossStrMult = this.inPyramid ? strengthBonus * 0.8 : strengthBonus;
-			this.enemy.max_hp = Math.floor((250 + 40 * this.difficulty) * miniBossHpMult);
-			this.enemy.baseAttack = Math.floor((25 + 8 * this.difficulty) * miniBossAtkMult);
-			this.enemy.strength = 2.4 * miniBossStrMult;
-		} else {
-			this.enemy.max_hp = Math.floor((100 + 10 * this.difficulty) * hpMultiplier);
-			this.enemy.baseAttack = Math.floor((10 + 2 * this.difficulty) * atkMultiplier);
-			this.enemy.strength = 1.0 * strengthBonus;
+		// Adjust enemy HP and attack based on type
+		// Pyramid enemies scale with map difficulty, non-pyramid use normal multipliers
+		let hpMultiplier = this.inPyramid
+			? (B.HP_MULT.pyramid + this.difficulty * B.HP_SCALE_PER_DIFF)
+			: B.HP_MULT.normal;
+		let atkMultiplier = this.inPyramid
+			? (B.ATK_MULT.pyramid + this.difficulty * B.ATK_SCALE_PER_DIFF)
+			: B.ATK_MULT.normal;
+		let strengthBonus = this.inPyramid
+			? (B.STRENGTH_MULT.pyramid + this.difficulty * B.STRENGTH_SCALE_PER_DIFF)
+			: B.STRENGTH_MULT.normal;
+
+		// Get enemy type base stats from Config
+		const stats = type === 'elite' ? B.ELITE
+			: type === 'mini_boss' ? B.MINI_BOSS
+			: B.MONSTER;
+
+		if (type === 'mini_boss' && this.inPyramid) {
+			// Pyramid mini-boss difficulty reduced
+			hpMultiplier *= B.MINI_BOSS_PYRAMID_REDUCTION;
+			atkMultiplier *= B.MINI_BOSS_PYRAMID_REDUCTION;
+			strengthBonus *= B.MINI_BOSS_PYRAMID_REDUCTION;
 		}
+
+		this.enemy.max_hp = Math.floor((stats.hp + stats.hpPerDiff * this.difficulty) * hpMultiplier);
+		this.enemy.baseAttack = Math.floor((stats.atk + stats.atkPerDiff * this.difficulty) * atkMultiplier);
+		this.enemy.strength = stats.strength * strengthBonus;
 
 		if (this.inPyramid) {
 			this.enemy.name += ` (金字塔-地圖${this.difficulty})`;
@@ -86,16 +136,17 @@ const BattleMixin = {
 	 */
 	attemptFlee() {
 		if (!this.inBattle) {
-			showMessage('目前不在戰鬥中。');
+			showMessage(t('notInBattle'));
 			return;
 		}
 
 		// Cancel auto-spin
 		stopAutoSpinLoop();
 
-		const fleeChance = Math.min(0.9, 0.4 + 0.02 * this.player.luck_combat);
+		const B = Config.BATTLE;
+		const fleeChance = Math.min(B.FLEE_MAX_CHANCE, B.FLEE_BASE_CHANCE + B.FLEE_LUCK_BONUS * this.player.luck_combat);
 		if (Math.random() < fleeChance) {
-			showMessage('你成功逃離戰鬥！');
+			showMessage(t('fleeSuccess'));
 			this.inBattle = false;
 
 			// Switch back to exploration music
@@ -113,7 +164,7 @@ const BattleMixin = {
 			this.enemy.hp = 0;
 			this.updateStatus();
 		} else {
-			showMessage('逃跑失敗！敵人獲得一次攻擊機會！');
+			showMessage(t('fleeFailed'));
 			setTimeout(() => {
 				if (this.inBattle && this.enemy.hp > 0) this.enemyAutoAttack();
 			}, 300);
@@ -124,29 +175,24 @@ const BattleMixin = {
 	 * Enemy auto-attack when turn counter reaches 0
 	 */
 	enemyAutoAttack() {
-		// Calculate base attack and reduce base damage (more suitable for beginners)
+		// Calculate base attack with combo counter-attack bonus
 		const raw = this.enemy.baseAttack;
-		// If player has consecutive symbols, enemy slightly increases counter-attack (risk), adjusted to linear multiplier
 		const extra = Math.max(0, this.consecutivePrimaryCount - 1) * 0.3; // 30% counter per combo
-		let dmg = Math.floor(raw * (1 + extra));
+		const dmg = Math.floor(raw * (1 + extra));
 
-		// Player has dodge chance (from luck and armor passive dodge)
-		const armorDodge = this.player.equipment.armor ? (this.player.equipment.armor.dodge_rate || 0) : 0;
-		const dodgeChance = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodge / 100); // Max 50% dodge
-
-		if (Math.random() < dodgeChance) {
-			showMessage(`你閃避了敵人的自動攻擊！(戰鬥幸運 ${this.player.luck_combat})`);
+		if (Math.random() < this._calcDodgeChance()) {
+			showMessage(t('dodgedAutoAttack', { luck: this.player.luck_combat }));
 			// Consume some combat luck after successful dodge
-			if (this.player.luck_combat && this.player.luck_combat > 0) {
+			if (this.player.luck_combat > 0) {
 				this.player.luck_combat = Math.max(0, this.player.luck_combat - 1);
-				showMessage(`戰鬥幸運 -1（剩餘 ${this.player.luck_combat}）。`);
+				showMessage(t('luckConsumed', { remaining: this.player.luck_combat }));
 			}
 		} else {
 			const consumedShield = Math.min(this.player.shield, dmg);
 			const mitigated = Math.max(0, dmg - this.player.shield);
 			this.player.shield -= consumedShield;
 			this.player.hp -= mitigated;
-			showMessage(`敵人自動攻擊，造成 ${dmg} 傷害（護盾吸收 ${consumedShield}），玩家 HP -${mitigated}。`);
+			showMessage(t('enemyAutoAttackDamage', { damage: dmg, absorbed: consumedShield, actual: mitigated }));
 		}
 
 		// Reset attack countdown
@@ -174,8 +220,8 @@ const BattleMixin = {
 			}
 		}
 
-		// Triple match gives extra 2.5x bonus (equivalent to 2.5x of 2-slot effect)
-		const tripleBonus = matchCount === 3 ? 2.5 : 1;
+		// Triple match gives extra bonus (equivalent to multiplied 2-slot effect)
+		const tripleBonus = matchCount === 3 ? Config.BATTLE.TRIPLE_BONUS : 1;
 
 		// Calculate current combo (including current slot) and display
 		const previousCombo = (this.inBattle && this.consecutivePrimarySymbol === primary) ? this.consecutivePrimaryCount : 0;
@@ -240,98 +286,77 @@ const BattleMixin = {
 	_processSymbolEffect(primary, matchCount, tripleBonus, comboMultiplier, effectiveCombo) {
 		switch (primary) {
 			case '⚔️': {
-				// Calculate crit chance (affected by combat luck), apply crit multiplier
-				let baseDmg = 15 * matchCount;
-				baseDmg = Math.round(baseDmg * tripleBonus);
-				baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
-				const weaponAtk = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
-				baseDmg += weaponAtk;
-				const weaponCritRate = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
-				const critChance = Math.min(0.75, 0.08 + 0.05 * this.player.luck_combat + weaponCritRate / 100);
-				let isCrit = Math.random() < critChance;
-				let finalDmg = isCrit ? Math.floor(baseDmg * 2.0) : baseDmg;
+				// Normal attack with crit chance
+				let baseDmg = this._calcScaledValue(15, matchCount, tripleBonus, comboMultiplier);
+				baseDmg += this._getWeaponAttr('atk');
+				const isCrit = Math.random() < this._calcCritChance();
+				const finalDmg = isCrit ? Math.floor(baseDmg * 2.0) : baseDmg;
 				this.enemy.hp -= finalDmg;
-				showMessage(`你發動普通攻擊 x${matchCount}${isCrit? '（暴擊）':''}，對敵人造成 ${finalDmg} 傷害。`);
+				showMessage(t('normalAttack', { count: matchCount, crit: isCrit ? t('critical') : '', damage: finalDmg }));
 				break;
 			}
 			case '⚡️': {
-				let baseDmg = 25 * matchCount;
-				baseDmg = Math.round(baseDmg * tripleBonus);
-				baseDmg = Math.max(1, Math.round(baseDmg * comboMultiplier));
-				const weaponAtk2 = this.player.equipment.weapon ? (this.player.equipment.weapon.atk || 0) : 0;
-				baseDmg += weaponAtk2;
-				const weaponSkillPower = this.player.equipment.weapon ? (this.player.equipment.weapon.skill_power || 0) : 0;
-				baseDmg = Math.floor(baseDmg * (1 + weaponSkillPower / 100));
-				const weaponCritRate2 = this.player.equipment.weapon ? (this.player.equipment.weapon.crit_rate || 0) : 0;
-				const critChance2 = Math.min(0.75, 0.08 + 0.05 * this.player.luck_combat + weaponCritRate2 / 100);
-				let isCrit2 = Math.random() < critChance2;
-				let finalDmg2 = isCrit2 ? Math.floor(baseDmg * 2.2) : baseDmg;
-				this.enemy.hp -= finalDmg2;
+				// Skill attack with skill power bonus
+				let baseDmg = this._calcScaledValue(25, matchCount, tripleBonus, comboMultiplier);
+				baseDmg += this._getWeaponAttr('atk');
+				const skillPower = this._getWeaponAttr('skill_power');
+				baseDmg = Math.floor(baseDmg * (1 + skillPower / 100));
+				const isCrit = Math.random() < this._calcCritChance();
+				const finalDmg = isCrit ? Math.floor(baseDmg * 2.2) : baseDmg;
+				this.enemy.hp -= finalDmg;
 				const staminaCost = 5 * matchCount;
 				this.player.stamina = Math.max(0, this.player.stamina - staminaCost);
-				showMessage(`你使用技能 x${matchCount}${isCrit2? '（暴擊）':''}，對敵人造成 ${finalDmg2} 傷害，消耗體力 ${staminaCost}。`);
+				showMessage(t('skillAttack', { count: matchCount, crit: isCrit ? t('critical') : '', damage: finalDmg, stamina: staminaCost }));
 				break;
 			}
 			case '🛡️': {
-				let shieldGain = 10 * matchCount;
-				shieldGain = Math.round(shieldGain * tripleBonus);
-				shieldGain = Math.max(1, Math.round(shieldGain * comboMultiplier));
+				const shieldGain = this._calcScaledValue(10, matchCount, tripleBonus, comboMultiplier);
 				this.player.shield += shieldGain;
-				showMessage(`你獲得防禦 x${matchCount}（連擊 x${effectiveCombo}），護盾 +${shieldGain}。`);
+				showMessage(t('shieldGain', { count: matchCount, combo: effectiveCombo, shield: shieldGain }));
 				break;
 			}
 			case '🧪': {
 				// Potion effect scales with map difficulty
-				const baseHpPerSymbol = 90 + (this.difficulty * 10);
-				let hpGain = baseHpPerSymbol * matchCount;
-				hpGain = Math.round(hpGain * tripleBonus);
-				hpGain = Math.max(1, Math.round(hpGain * comboMultiplier));
+				const baseHp = 90 + (this.difficulty * 10);
+				const hpGain = this._calcScaledValue(baseHp, matchCount, tripleBonus, comboMultiplier);
 				this.player.hp = Math.min(this.player.max_hp, this.player.hp + hpGain);
-				const baseStaminaPerSymbol = 30 + (this.difficulty * 8);
-				let staminaGain = baseStaminaPerSymbol * matchCount;
-				staminaGain = Math.round(staminaGain * tripleBonus);
-				staminaGain = Math.max(1, Math.round(staminaGain * comboMultiplier));
+				const baseStamina = 30 + (this.difficulty * 8);
+				const staminaGain = this._calcScaledValue(baseStamina, matchCount, tripleBonus, comboMultiplier);
 				this.player.stamina = Math.min(this.player.max_stamina, this.player.stamina + staminaGain);
-				showMessage(`使用紅色水瓶 x${matchCount}（連擊 x${effectiveCombo}，地圖${this.difficulty}），回復 HP ${hpGain}、體力 ${staminaGain}。`);
+				showMessage(t('potionUse', { count: matchCount, combo: effectiveCombo, map: this.difficulty, hp: hpGain, stamina: staminaGain }));
 				break;
 			}
 			case '⭐': {
-				let luckGain = matchCount * tripleBonus;
+				const luckGain = Math.round(matchCount * tripleBonus);
 				this.player.luck_combat += luckGain;
-				showMessage(`獲得戰鬥幸運 +${luckGain}，提高暴擊與閃避機率。`);
+				showMessage(t('luckGain', { luck: luckGain }));
 				break;
 			}
 			case '💀': {
-				let rawDmg = 10 * matchCount;
-				rawDmg = Math.round(rawDmg * tripleBonus);
-				const armorDodgeSkull = this.player.equipment.armor ? (this.player.equipment.armor.dodge_rate || 0) : 0;
-				const dodgeChanceSkull = Math.min(0.5, 0.03 + 0.02 * this.player.luck_combat + armorDodgeSkull / 100);
-				if (Math.random() < dodgeChanceSkull) {
-					showMessage(`你閃避了敵人符號攻擊（戰鬥幸運 ${this.player.luck_combat}）！`);
-					if (this.player.luck_combat && this.player.luck_combat > 0) {
+				const rawDmg = Math.round(10 * matchCount * tripleBonus);
+				if (Math.random() < this._calcDodgeChance()) {
+					showMessage(t('dodgedSymbolAttack', { luck: this.player.luck_combat }));
+					if (this.player.luck_combat > 0) {
 						this.player.luck_combat = Math.max(0, this.player.luck_combat - 1);
-						showMessage(`戰鬥幸運 -1（剩餘 ${this.player.luck_combat}）。`);
+						showMessage(t('luckConsumed', { remaining: this.player.luck_combat }));
 					}
 				} else {
 					const consumedShield = Math.min(this.player.shield, rawDmg);
 					const mitigated = Math.max(0, rawDmg - this.player.shield);
 					this.player.shield -= consumedShield;
 					this.player.hp -= mitigated;
-					showMessage(`敵人攻擊 x${matchCount}，原始傷害 ${rawDmg}，護盾吸收 ${consumedShield}，實際受損 ${mitigated}。`);
+					showMessage(t('enemySymbolAttack', { count: matchCount, raw: rawDmg, absorbed: consumedShield, actual: mitigated }));
 				}
 				break;
 			}
 			case '💰': {
-				const coinValue = 20;
-				let got = coinValue * matchCount;
-				got = Math.round(got * tripleBonus);
-				got = Math.max(1, Math.round(got * comboMultiplier));
+				const got = this._calcScaledValue(20, matchCount, tripleBonus, comboMultiplier);
 				this.player.gold += got;
-				showMessage(`獲得金幣 ${got}（💰 x${matchCount}，連擊 x${effectiveCombo}）。`);
+				showMessage(t('goldGain', { gold: got, count: matchCount, combo: effectiveCombo }));
 				break;
 			}
 			default: {
-				showMessage('此符號沒有主要效果。');
+				showMessage(t('noSymbolEffect'));
 				break;
 			}
 		}
@@ -342,7 +367,7 @@ const BattleMixin = {
 	 * @private
 	 */
 	_handleVictory() {
-		showMessage('你擊敗了敵人！戰鬥結束，獲得獎勵。');
+		showMessage(t('victoryMessage'));
 
 		// Play victory music
 		if (typeof MusicSystem !== 'undefined') {
@@ -353,12 +378,12 @@ const BattleMixin = {
 		if (this.player.banditsLoot) {
 			const banditGold = this.player.banditsLoot;
 			this.player.gold += banditGold;
-			showMessage(`💰 從強盜那裡奪回了戰利品：${banditGold} 金幣！`);
+			showMessage(t('banditLootRecovered', { gold: banditGold }));
 			this.player.banditsLoot = 0;
 		}
 
-		// Pyramid multiplier (changed to 15x)
-		const pyramidMultiplier = this.inPyramid ? 15 : 1;
+		// Pyramid multiplier from Config
+		const pyramidMultiplier = this.inPyramid ? Config.BATTLE.PYRAMID_XP_MULTIPLIER : 1;
 
 		// Enemy type reward multiplier (elite x2, mini-boss x3)
 		let enemyTypeMultiplier = 1;

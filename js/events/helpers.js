@@ -1,20 +1,6 @@
 // Event Handlers - Shared Helper Functions
-
-// Pick a weighted random outcome from an array of {weight, ...} objects
-function pickWeightedOutcome(outcomes) {
-    const total = outcomes.reduce((s, o) => s + o.weight, 0);
-    let r = Math.random() * total;
-    for (const o of outcomes) {
-        r -= o.weight;
-        if (r <= 0) return o;
-    }
-    return outcomes[outcomes.length - 1];
-}
-
-// Get map difficulty multiplier (exponential scaling)
-function getMapMultiplier(difficulty) {
-    return Math.pow(2, difficulty - 1);
-}
+// Note: Core utilities (pickWeightedOutcome, getMapMultiplier) are now in js/core/Utils.js
+// These functions remain for backward compatibility and are provided by Utils.js shims
 
 // Generate a random item with specified rarity
 // Delegates to cloneItem from EnemyGenerator.js for consistent scaling

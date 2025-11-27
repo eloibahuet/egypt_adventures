@@ -137,31 +137,12 @@ const NavigationMixin = {
 			];
 			const hint = finalPool[Math.floor(Math.random() * finalPool.length)];
 
-			// Compass effect: show event type
+			// Compass effect: show event type using i18n
 			let compassInfo = '';
 			if (hasCompass) {
-				const eventNames = {
-					'monster': '普通敵人',
-					'elite': '精英敵人',
-					'mini_boss': '小頭目',
-					'merchant': '商人',
-					'black_market': '黑市',
-					'oasis': '綠洲',
-					'sandstorm': '沙塵暴',
-					'pyramid': '金字塔',
-					'buried_treasure': '寶藏',
-					'dead_traveler': '旅者遺體',
-					'ancient_shrine': '神殿',
-					'caravan_rest': '驛站',
-					'lost_merchant': '迷失商隊',
-					'cursed_shrine': '詛咒神殿',
-					'bandit_ambush': '強盜',
-					'ancient_puzzle': '古老謎題',
-					'desert_oasis': '沙漠綠洲',
-					'trading_post': '交易站',
-					'empty': '平靜路段'
-				};
-				compassInfo = ` 🧭[${eventNames[event] || event}]`;
+				const eventNameKey = `eventName_${event}`;
+				const eventName = t(eventNameKey) !== eventNameKey ? t(eventNameKey) : event;
+				compassInfo = ` 🧭[${eventName}]`;
 			}
 
 			// If there are branches, add extra hint

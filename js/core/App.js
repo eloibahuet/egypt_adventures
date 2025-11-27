@@ -6,27 +6,15 @@ const App = {
     version: null,
     game: null,
 
-    // DOM element references (populated by init via DOMRefs)
-    elements: {
-        output: null,
-        spinBtn: null,
-        stopBtn: null,
-        reels: []
-    },
-
-    // Initialize App with DOM elements
+    // Initialize App
     init() {
         this.version = DOMRefs.versionDisplay ? DOMRefs.versionDisplay.textContent.trim() : 'Version 1.0.0';
-        this.elements.output = DOMRefs.output;
-        this.elements.spinBtn = DOMRefs.spinBtn;
-        this.elements.stopBtn = DOMRefs.stopBtn;
-        this.elements.reels = DOMRefs.reels;
         console.log('App Version:', this.version);
     },
 
     // Central message display function
     showMessage(msg) {
-        const output = this.elements.output || DOMRefs.output;
+        const output = DOMRefs.output;
         if (!output) return;
 
         const node = document.createElement('div');

@@ -174,34 +174,4 @@ const SYMBOL_WEIGHTS = {
 };
 
 // Note: chooseEvent() is now provided by EventRegistry in js/events/registry.js
-
-// 加權符號選擇函數
-function pickWeightedSymbol() {
-	const pool = [];
-	for (const s of SYMBOLS) {
-		const w = SYMBOL_WEIGHTS[s] || 1;
-		for (let i=0;i<w;i++) pool.push(s);
-	}
-	return pool[Math.floor(Math.random() * pool.length)];
-}
-
-// 動態獲取符號高度，根據螢幕寬度適配（與 CSS 同步）
-function getSymbolHeight() {
-	const width = window.innerWidth;
-	// iPhone 15: 390px, iPhone 15 Plus: 428px, iPhone 15 Pro Max: 430px
-	// 極小螢幕（<= 400px）使用 41px
-	if (width <= 400) return 41;
-	// 手機版（<= 600px）使用 60px
-	if (width <= 600) return 60;
-	// 桌面版使用 60px
-	return 60;
-}
-
-// 動態獲取高亮框頂部位置（與 CSS 同步）
-function getHighlightTop() {
-	const width = window.innerWidth;
-	// 極小螢幕：41px 符號，高亮框在 20.5px
-	if (width <= 400) return 20.5;
-	// 其他：60px 符號，高亮框在 30px
-	return 30;
-}
+// Note: pickWeightedSymbol, getSymbolHeight, getHighlightTop moved to js/core/Utils.js

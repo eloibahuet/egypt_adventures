@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Initialize App singleton
 	App.init();
 
-	const output = App.elements.output;
-	const input = document.getElementById('game-input');
-	const button = document.getElementById('submit-btn');
-	const spinBtn = App.elements.spinBtn;
-	const stopBtn = App.elements.stopBtn;
+	const output = DOMRefs.output;
+	const input = DOMRefs.input;
+	const button = DOMRefs.submitBtn;
+	const spinBtn = DOMRefs.spinBtn;
+	const stopBtn = DOMRefs.stopBtn;
 
 	// Legacy compatibility - expose version globally
 	window.APP_VERSION = App.version;
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// 初始不允許旋轉，直到玩家選擇移動方向
 	spinBtn.disabled = true;
-	const reels = App.elements.reels;
+	const reels = DOMRefs.reels;
 
 	// Early slot machine module initialization (before populateReels)
 	// Game will be passed later after it's created
